@@ -118,6 +118,43 @@
             "version": "1.0.0",
             "publisher": "FINOS",
             "icons": []
+        },
+         {
+            "appId": "sp1",
+            "name": "Security POC 1",
+            "title": "Security POC 1: Send On Private Channel",
+            "description": "Waits for SecretComms intent, then broadcasts on a private channel",
+            "type": "web",
+            "details": {
+                "url": "http://robs-pro:8095/static/sp1/index.html"
+            },
+            "hostManifests": {},
+            "version": "1.0.0",
+            "publisher": "FINOS",
+            "icons": [],
+            "interop": {
+                "intents": {
+                    "listensFor": {
+                        "SecretComms": {
+                            "displayName": "Secret Comms Baby!"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "appId": "sp2",
+            "name": "Security POC 2",
+            "title": "Security POC 2: Raise the SecretComms intent",
+            "description": "Raises SecretComms then listens on the returned private channel",
+            "type": "web",
+            "details": {
+                "url": "http://robs-pro:8095/static/sp2/index.html"
+            },
+            "hostManifests": {},
+            "version": "1.0.0",
+            "publisher": "FINOS",
+            "icons": []
         }
     ],
     "message": "OK"

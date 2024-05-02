@@ -6,10 +6,11 @@ export class SigningMiddleware implements MessagingMiddleware {
 
     }
 
-    preSend(msg: object): object {
-
+    preSend(msg: any): object {
+        msg.payload.signature = 'bobob'
         return msg;
     }
+
     postReceive(msg: object): object {
         return msg;
     }

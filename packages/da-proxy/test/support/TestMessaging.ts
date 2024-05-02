@@ -11,7 +11,7 @@ import { GetAppMetadata } from "./responses/GetAppMetadata";
 import { FindInstances } from "./responses/FindInstances";
 import { Open } from "./responses/Open";
 import { Handshake } from "./responses/Handshake";
-import { LoggingMiddleware } from "./LoggingMiddleware";
+import { MessagingMiddleware } from "fdc3-common";
 
 export interface IntentDetail {
     app?: AppIdentifier,
@@ -91,8 +91,8 @@ export class TestMessaging extends AbstractMessaging {
         new Handshake()
     ]
 
-    constructor(channelState: { [key: string]: ContextElement[] }) {
-        super([new LoggingMiddleware()])
+    constructor(middlewares: MessagingMiddleware[], channelState: { [key: string]: ContextElement[] }) {
+        super(middlewares)
         this.channelState = channelState
     }
 

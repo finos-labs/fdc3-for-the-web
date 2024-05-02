@@ -7,11 +7,12 @@ import { CustomWorld } from '../world/index';
 import { BasicDesktopAgent, DefaultAppSupport, DefaultChannelSupport, DefaultIntentSupport, DefaultHandshakeSupport } from '../../src';
 import { IntentResolver, SingleAppIntent } from 'fdc3-common';
 import { AppIntent, IntentResult } from '@finos/fdc3';
+import { LoggingMiddleware } from '../support/LoggingMiddleware';
 
 /**
-     * This super-simple intent resolver just resolves to the first
-     * intent / app in the list.
-     */
+ * This super-simple intent resolver just resolves to the first
+ * intent / app in the list.
+ */
 class SimpleIntentResolver implements IntentResolver {
 
     cw: CustomWorld
@@ -41,7 +42,9 @@ export const CHANNEL_STATE = 'CHANNEL_STATE'
 Given('A Desktop Agent in {string}', async function (this: CustomWorld, field: string) {
 
     if (!this.messaging) {
-        this.messaging = new TestMessaging(this.props[CHANNEL_STATE]);
+        this.messaging = new TestMessaging(
+            [new LoggingMiddleware()],
+            this.props[CHANNEL_STATE]);
     }
 
     const version = "2.0"

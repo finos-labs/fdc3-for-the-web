@@ -5,6 +5,8 @@ import { MessagingMiddleware } from "fdc3-common";
 import { AbstractMessaging } from 'da-proxy'
 import { RegisterableListener } from "da-proxy/src/listeners/RegisterableListener";
 import { ICreateLog } from "@cucumber/cucumber/lib/runtime/attachment_manager";
+import { Handshake } from "./responses/Handshake";
+import { Open } from "./responses/Open";
 
 export interface IntentDetail {
     app?: AppIdentifier,
@@ -74,7 +76,10 @@ export class TestMessaging extends AbstractMessaging {
     readonly intentDetails: IntentDetail[] = []
     readonly channelState: { [key: string]: ContextElement[] }
 
-    readonly automaticResponses: AutomaticResponse[] = []
+    readonly automaticResponses: AutomaticResponse[] = [
+        new Open(),
+        new Handshake()
+    ]
 
     constructor(middlewares: MessagingMiddleware[], channelState: { [key: string]: ContextElement[] }) {
         super(middlewares)

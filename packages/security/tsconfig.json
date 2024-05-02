@@ -1,26 +1,12 @@
 {
+  "extends": "../../tsconfig.root.json",
   "compilerOptions": {
-    "target": "ESNext",
-    "useDefineForClassFields": true,
-    "module": "NodeNext",
-    "lib": [
-      "ESNext",
-      "DOM"
+    "rootDirs": [
+      "src",
+      "test"
     ],
-    "moduleResolution": "NodeNext",
-    "strict": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "esModuleInterop": true,
-    "noEmit": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "skipLibCheck": true
+    "outDir": "dist",
   },
-  "include": [
-    "src"
-  ],
   "references": [
     {
       "path": "../fdc3-common"

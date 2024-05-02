@@ -2,9 +2,9 @@ import { Listener } from "@finos/fdc3";
 
 export interface RegisterableListener extends Listener {
 
-    id : string
+    getId(): string
 
-    filter(m: any) : boolean
+    filter(m: any): boolean
 
-    action(m: any) : void
+    action(m: any): void
 }

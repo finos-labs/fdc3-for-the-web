@@ -22,6 +22,9 @@ export abstract class AbstractListener<X> implements RegisterableListener {
         this.messaging.register(this)
         this.listenerNotification(subscribeType)
     }
+    getId(): string {
+        return this.id
+    }
 
     abstract filter(m: any): boolean
 

@@ -35,11 +35,11 @@ class SimpleIntentResolver implements IntentResolver {
     }
 }
 
-Given('A Desktop Agent in {string} with Dummy Signing Middleware and certificate {string}', async function (this: CustomWorld, field: string, cert: string) {
+Given('A Desktop Agent in {string} with Dummy Signing Middleware', async function (this: CustomWorld, field: string) {
 
     if (!this.messaging) {
         this.messaging = new TestMessaging(
-            [createDummySigningMiddleware(cert)],
+            [createDummySigningMiddleware()],
             this.props[CHANNEL_STATE]);
     }
 
@@ -76,6 +76,17 @@ When('I call {string} with {string} with parameter {string}', async function (th
         const result = await fn.call(this.props[field], handleResolve(param, this))
         this.props['result'] = result;
     } catch (error) {
+        this.props['result'] = error
+    }
+})
+
+When('I call {string} with parameter {string}', async function (this: CustomWorld, fnName: string, param: string) {
+    try {
+        const fn = this.props[fnName];
+        const result = await fn(handleResolve(param, this))
+        this.props['result'] = result;
+    } catch (error) {
+        this.log(JSON.stringify(error))
         this.props['result'] = error
     }
 })

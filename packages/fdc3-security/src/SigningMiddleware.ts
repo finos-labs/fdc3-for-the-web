@@ -1,13 +1,14 @@
 import { MessagingMiddleware } from 'fdc3-common'
 
-export type Sign = (msg: string) => Promise<string>
+export type Sign = (msg: string) => Promise<MessageSignature>
 export type Check = (p: MessageSignature, msg: string) => Promise<MessageAuthenticity>
 export type Encrypt = (msg: string) => Promise<string>
 export type Decrypt = (msg: string) => Promise<string>
 
 export type MessageSignature = {
     digest: string,
-    certificateUrl: string
+    certificateUrl: string,
+    algorithm: any
 }
 
 export type MessageAuthenticity = {
@@ -27,12 +28,10 @@ export class SigningMiddleware implements MessagingMiddleware {
 
     private readonly sign: Sign
     private readonly check: Check
-    private readonly certificateUrl?: string
 
-    constructor(sign: Sign, check: Check, certificateUrl?: string,) {
+    constructor(sign: Sign, check: Check) {
         this.sign = sign
         this.check = check
-        this.certificateUrl = certificateUrl
     }
 
     contentToSign(msg: any) {
@@ -45,10 +44,7 @@ export class SigningMiddleware implements MessagingMiddleware {
 
     async preSend(msg: any): Promise<object> {
         if (TYPES_TO_SIGN.includes(msg.type)) {
-            msg.signature = {
-                digest: await this.sign(this.contentToSign(msg)),
-                certificateUrl: this.certificateUrl
-            } as MessageSignature
+            msg.signature = await this.sign(this.contentToSign(msg))
         }
 
         return msg;

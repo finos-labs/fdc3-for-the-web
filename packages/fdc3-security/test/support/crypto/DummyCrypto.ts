@@ -3,7 +3,12 @@ import { Check, MessageSignature, Sign, SigningMiddleware } from "../../../src/S
 
 
 const dummySign: Sign = async (msg: string) => {
-    return "length: " + msg.length
+    const out = {
+        digest: "length: " + msg.length,
+        certificateUrl: "https://dummy.com/cert",
+        algorithm: "LENGTH-CHECK"
+    } as MessageSignature
+    return out;
 }
 
 const dummyCheck: Check = async (p: MessageSignature, msg: string) => {
@@ -17,9 +22,9 @@ const dummyCheck: Check = async (p: MessageSignature, msg: string) => {
     return out
 }
 
-export function createDummySigningMiddleware(cert: string): SigningMiddleware {
+export function createDummySigningMiddleware(): SigningMiddleware {
 
-    return new SigningMiddleware(dummySign, dummyCheck, cert)
+    return new SigningMiddleware(dummySign, dummyCheck)
 
 
 

@@ -1,7 +1,7 @@
 Feature: Signing Broadcasts
 
   Background: Desktop Agent API
-    Given A Desktop Agent in "api" with Dummy Signing Middleware and certificate "https://blah.com/cert"
+    Given A Desktop Agent in "api" with Dummy Signing Middleware
     Given "instrumentContext" is a "fdc3.instrument" context
     Given "countryMessageOne" is a "broadcastRequest" message on channel "channel1" with context "fdc3.country" and signature "{\"certificateUrl\": \"https://blah.com/cert\", \"digest\": \"length: 394\"}"
 

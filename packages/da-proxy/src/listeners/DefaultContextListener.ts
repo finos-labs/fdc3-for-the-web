@@ -28,8 +28,8 @@ export class DefaultContextListener extends AbstractListener<ContextHandler> {
             && ((m.payload.context?.type == this.contextType) || (this.contextType == null));
     }
 
-    action(m: any): void {
-        this.handler(m.payload.context)
+    async action(m: any): Promise<void> {
+        this.handler(m.payload.context, m.payload.metadata)
     }
 
     /**

@@ -9,7 +9,11 @@ export function doesRowMatch(cw: CustomWorld, t: Record<string, string>, data: a
         const found = JSONPath({ path: field, json: data })[0];
         const resolved = handleResolve(actual, cw)
 
-        if (found != resolved) {
+        if ((found == true) && (resolved == "true")) {
+            // this is ok
+        } else if ((found == false) && (resolved == "false")) {
+            // this is ok
+        } else if (found != resolved) {
             cw.log("Match failed on " + field)
             return false;
         }

@@ -24,7 +24,7 @@ abstract class AbstractPrivateChannelEventListener<X> extends AbstractListener<X
         return (m.type == "PrivateChannel." + this.listenerType) && (this.channelId == m.payload?.channelId);
     }
 
-    abstract action(m: any): void
+    abstract action(m: any): Promise<void>
 }
 
 export class PrivateChannelEventListenerVoid extends AbstractPrivateChannelEventListener<() => void> {
@@ -36,8 +36,8 @@ export class PrivateChannelEventListenerVoid extends AbstractPrivateChannelEvent
         super(messaging, channelId, "onDisconnect", handler)
     }
 
-    action(_m: any): void {
-        this.handler()
+    async action(_m: any): Promise<void> {
+        return this.handler()
     }
 
 }
@@ -52,8 +52,8 @@ export class PrivateChannelEventListenerType extends AbstractPrivateChannelEvent
         super(messaging, channelId, listenerType, handler)
     }
 
-    action(m: any): void {
-        this.handler(m.payload.contextType)
+    async action(m: any): Promise<void> {
+        return this.handler(m.payload.contextType)
     }
 
 }

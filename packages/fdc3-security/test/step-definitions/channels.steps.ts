@@ -1,5 +1,5 @@
 import { DataTable, Given, Then, When } from '@cucumber/cucumber'
-import { Context } from '@finos/fdc3';
+import { Context, ContextMetadata } from '@finos/fdc3';
 import { handleResolve, matchData } from '../support/matching';
 import { CustomWorld } from '../world/index';
 import { AgentRequestMessage, BroadcastAgentRequest, PrivateChannelBroadcastAgentRequest, PrivateChannelOnDisconnectAgentRequest, PrivateChannelOnUnsubscribeAgentRequest, RequestMessageType } from '@finos/fdc3/dist/bridging/BridgingTypes'
@@ -31,7 +31,7 @@ Given('{string} is a {string} context', function (this: CustomWorld, field: stri
   this.props[field] = contextMap[type];
 })
 
-Given('{string} is a {string} message on channel {string} with context {string}', function (this: CustomWorld, field: string, type: string, channel: string, context: string) {
+Given('{string} is a {string} message on channel {string} with context {string} and signature {string}', function (this: CustomWorld, field: string, type: string, channel: string, context: string, signature: string) {
   const message = {
     meta: this.messaging!!.createMeta(),
     payload: {
@@ -40,6 +40,8 @@ Given('{string} is a {string} message on channel {string} with context {string}'
     },
     type: type
   } as PrivateChannelBroadcastAgentRequest | BroadcastAgentRequest
+
+  (message as any).signature = JSON.parse(signature)
 
   this.props[field] = message;
 })
@@ -89,12 +91,15 @@ Given('{string} pipes types to {string}', function (this: CustomWorld, typeHandl
   }
 })
 
-Given('{string} pipes context to {string}', function (this: CustomWorld, contextHandlerName: string, field: string) {
+Given('{string} pipes context to {string} and metadata to {string}', function (this: CustomWorld, contextHandlerName: string, field: string, field2: string) {
   this.props[field] = []
-  this.props[contextHandlerName] = (context: Context) => {
+  this.props[field2] = []
+  this.props[contextHandlerName] = (context: Context, metadata: ContextMetadata) => {
     this.props[field].push(context)
+    this.props[field2].push(metadata)
   }
 })
+
 
 When('messaging receives a {string} with payload:', function (this: CustomWorld, type: RequestMessageType, docString: string) {
   const message: AgentRequestMessage = {

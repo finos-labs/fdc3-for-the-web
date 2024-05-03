@@ -22,7 +22,7 @@ export class DefaultIntentListener extends AbstractListener<IntentHandler> {
         return (m.type == 'raiseIntentRequest') && (m.payload.intent == this.intent)
     }
 
-    action(m: RaiseIntentAgentRequest): void {
+    async action(m: RaiseIntentAgentRequest): Promise<void> {
         this.handleIntentResponse(m)
 
         const done = this.handler(m.payload.context, {

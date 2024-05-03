@@ -6,5 +6,5 @@ export interface RegisterableListener extends Listener {
 
     filter(m: any): boolean
 
-    action(m: any): void
+    action(m: any): Promise<void>
 }

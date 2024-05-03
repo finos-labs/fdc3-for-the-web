@@ -7,7 +7,7 @@ import { CustomWorld } from '../world/index';
 import { BasicDesktopAgent, DefaultAppSupport, DefaultChannelSupport, DefaultIntentSupport, DefaultHandshakeSupport } from 'da-proxy';
 import { IntentResolver, SingleAppIntent } from 'fdc3-common';
 import { AppIntent, IntentResult } from '@finos/fdc3';
-import { SigningMiddleware } from '../../src/SigningMiddleware'
+import { createDummySigningMiddleware } from '../support/crypto/DummyCrypto';
 
 export const CHANNEL_STATE = 'CHANNEL_STATE'
 
@@ -35,11 +35,11 @@ class SimpleIntentResolver implements IntentResolver {
     }
 }
 
-Given('A Desktop Agent in {string} with Signing Middleware', async function (this: CustomWorld, field: string) {
+Given('A Desktop Agent in {string} with Dummy Signing Middleware and certificate {string}', async function (this: CustomWorld, field: string, cert: string) {
 
     if (!this.messaging) {
         this.messaging = new TestMessaging(
-            [new SigningMiddleware()],
+            [createDummySigningMiddleware(cert)],
             this.props[CHANNEL_STATE]);
     }
 

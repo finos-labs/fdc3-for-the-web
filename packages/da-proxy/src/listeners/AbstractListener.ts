@@ -28,7 +28,7 @@ export abstract class AbstractListener<X> implements RegisterableListener {
 
     abstract filter(m: any): boolean
 
-    abstract action(m: any): void
+    abstract action(m: any): Promise<void>
 
     listenerNotification(type: string | null) {
         if (type) {

@@ -24,9 +24,9 @@ export abstract class AbstractMessaging implements Messaging {
      */
     async post(message: object): Promise<void> {
         var m = message
-        this.middlewares.forEach(mm => {
-            m = mm.preSend(m)
-        })
+        for (let i = 0; i < this.middlewares.length; i++) {
+            m = await this.middlewares[i].preSend(m)
+        }
 
         this.innerPost(m)
     }
@@ -47,11 +47,12 @@ export abstract class AbstractMessaging implements Messaging {
                 return l.filter(m)
             },
 
-            action: function (message: any): void {
+            action: async (message: any) => {
                 var m = message
-                _middlewares.forEach(mm => {
-                    m = mm.postReceive(m)
-                })
+                for (let i = 0; i < _middlewares.length; i++) {
+                    m = await _middlewares[i].postReceive(m)
+                }
+
                 l.action(m)
             },
 

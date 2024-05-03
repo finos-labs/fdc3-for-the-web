@@ -91,6 +91,17 @@ When('I call {string} with parameter {string}', async function (this: CustomWorl
     }
 })
 
+When('I call {string} with parameters {string} and {string}', async function (this: CustomWorld, fnName: string, param1: string, param2: string) {
+    try {
+        const fn = this.props[fnName];
+        const result = await fn(handleResolve(param1, this), handleResolve(param2, this))
+        this.props['result'] = result;
+    } catch (error) {
+        this.log(JSON.stringify(error))
+        this.props['result'] = error
+    }
+})
+
 When('I call {string} with {string} with parameters {string} and {string}', async function (this: CustomWorld, field: string, fnName: string, param1: string, param2: string) {
     try {
         const fn = this.props[field][fnName];

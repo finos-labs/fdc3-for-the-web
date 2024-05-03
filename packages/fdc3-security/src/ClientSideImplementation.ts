@@ -1,37 +1,46 @@
 import { Check, MessageAuthenticity, MessageSignature, Sign } from "./SigningMiddleware"
 
 
+export const SIGNING_ALGORITHM_DETAILS = {
+    name: "ECDSA",
+    hash: { name: "SHA-512" }
+} as EcdsaParams
 
 
 export class ClientSideImplementation {
 
-    initSigner(privateKey: CryptoKey, algorithm: AlgorithmIdentifier | RsaPssParams | EcdsaParams, certificateUrl?: string): Sign {
+    initSigner(privateKey: CryptoKey, certificateUrl?: string): Sign {
         return async (msg: string) => {
-            this.validateAlgorithm(algorithm)
-            const buffer = await crypto.subtle.sign({
-                name: 'RSA-PSS',
-                hash: 'SHA-512',
-                saltLength: 100
-            }, privateKey, new TextEncoder().encode(msg))
+            const buffer = await crypto.subtle.sign(SIGNING_ALGORITHM_DETAILS, privateKey, new TextEncoder().encode(msg))
             const digest = btoa(String.fromCharCode(...new Uint8Array(buffer)));
 
             return {
-                algorithm,
+                algorithm: SIGNING_ALGORITHM_DETAILS,
                 certificateUrl,
                 digest
             } as MessageSignature
         }
     }
 
-    validateAlgorithm(algorithm: unknown): AlgorithmIdentifier | RsaPssParams | EcdsaParams {
-        // we moight want to further limit the algorithms available for signing in FDC3...
-        return algorithm as AlgorithmIdentifier | RsaPssParams | EcdsaParams
+    validateAlgorithm(algorithm: any) {
+        if ((algorithm.name != SIGNING_ALGORITHM_DETAILS.name) || (algorithm.hash != SIGNING_ALGORITHM_DETAILS.hash)) {
+            throw new Error("Unsupported Algorithm")
+        }
     }
 
     initChecker(publicKey: CryptoKey): Check {
         return async (p: MessageSignature, msg: string): Promise<MessageAuthenticity> => {
-            const validatedAlgorithm = this.validateAlgorithm(p.algorithm)
-            const validated = await crypto.subtle.verify(validatedAlgorithm, publicKey, new TextEncoder().encode(p.digest), new TextEncoder().encode(msg))
+
+            function base64ToArrayBuffer(base64: string) {
+                var binaryString = atob(base64);
+                var bytes = new Uint8Array(binaryString.length);
+                for (var i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                return bytes.buffer;
+            }
+
+            const validated = await crypto.subtle.verify(p.algorithm, publicKey, base64ToArrayBuffer(p.digest), new TextEncoder().encode(msg))
             return {
                 verified: true,
                 valid: validated,

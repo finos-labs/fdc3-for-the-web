@@ -1,6 +1,7 @@
 import { Given } from "@cucumber/cucumber";
 import { CustomWorld } from "../world";
 import { ClientSideImplementation, SIGNING_ALGORITHM_DETAILS } from "../../src/ClientSideImplementation";
+import { handleResolve } from "../support/matching";
 
 Given('A New Keypair loaded into {string} and {string}', async function (this: CustomWorld, pub: string, priv: string) {
     const params: EcKeyGenParams = {
@@ -16,3 +17,17 @@ Given('A New Keypair loaded into {string} and {string}', async function (this: C
 Given('A Client Side Implementation in {string}', function (this: CustomWorld, field: string) {
     this.props[field] = new ClientSideImplementation()
 })
+
+
+Given('A Local URL Resolver in {string} resolving {string} to {string}', function (this: CustomWorld, field: string, url: string, field2: string) {
+    const out = (x: string) => {
+        if (x == url) {
+            return handleResolve(field2, this)
+        } else {
+            throw new Error(`Can't resolve ${x}`)
+        }
+    }
+
+    this.props[field] = out
+});
+

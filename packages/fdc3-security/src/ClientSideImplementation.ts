@@ -9,14 +9,14 @@ export const SIGNING_ALGORITHM_DETAILS = {
 
 export class ClientSideImplementation {
 
-    initSigner(privateKey: CryptoKey, certificateUrl?: string): Sign {
+    initSigner(privateKey: CryptoKey, publicKeyUrl?: string): Sign {
         return async (msg: string) => {
             const buffer = await crypto.subtle.sign(SIGNING_ALGORITHM_DETAILS, privateKey, new TextEncoder().encode(msg))
             const digest = btoa(String.fromCharCode(...new Uint8Array(buffer)));
 
             return {
                 algorithm: SIGNING_ALGORITHM_DETAILS,
-                certificateUrl,
+                publicKeyUrl,
                 digest
             } as MessageSignature
         }
@@ -28,7 +28,7 @@ export class ClientSideImplementation {
         }
     }
 
-    initChecker(publicKey: CryptoKey): Check {
+    initChecker(resolver: (url: string) => CryptoKey): Check {
         return async (p: MessageSignature, msg: string): Promise<MessageAuthenticity> => {
 
             function base64ToArrayBuffer(base64: string) {
@@ -40,12 +40,12 @@ export class ClientSideImplementation {
                 return bytes.buffer;
             }
 
+            const publicKey = resolver(p.publicKeyUrl)
             const validated = await crypto.subtle.verify(p.algorithm, publicKey, base64ToArrayBuffer(p.digest), new TextEncoder().encode(msg))
             return {
                 verified: true,
                 valid: validated,
-                certificateUrl: "dunno",
-                x509: "hi"
+                publicKeyUrl: p.publicKeyUrl,
             }
         }
     }

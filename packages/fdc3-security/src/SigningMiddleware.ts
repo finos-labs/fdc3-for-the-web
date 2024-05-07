@@ -7,15 +7,14 @@ export type Decrypt = (msg: string) => Promise<string>
 
 export type MessageSignature = {
     digest: string,
-    certificateUrl: string,
+    publicKeyUrl: string,
     algorithm: any
 }
 
 export type MessageAuthenticity = {
     verified: boolean,
     valid: boolean,
-    certificateUrl: string
-    x509: any
+    publicKeyUrl: string
 }
 
 const TYPES_TO_SIGN = [

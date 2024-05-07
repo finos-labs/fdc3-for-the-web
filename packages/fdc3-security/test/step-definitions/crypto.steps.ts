@@ -22,7 +22,9 @@ Given('A Client Side Implementation in {string}', function (this: CustomWorld, f
 Given('A Local URL Resolver in {string} resolving {string} to {string}', function (this: CustomWorld, field: string, url: string, field2: string) {
     const out = (x: string) => {
         if (x == url) {
-            return handleResolve(field2, this)
+            const key: CryptoKey = handleResolve(field2, this)
+            const jwk = crypto.subtle.exportKey("jwk", key)
+            return new Promise(resolve => resolve(jwk))
         } else {
             throw new Error(`Can't resolve ${x}`)
         }

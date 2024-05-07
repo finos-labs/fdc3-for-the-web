@@ -41,8 +41,7 @@ function matches(a: ListenerRegistration, b: ListenerRegistration): boolean {
  */
 async function forwardRequest(arg0: RaiseIntentAgentRequest, to: AppMetadata, sc: ServerContext, ih: IntentHandler): Promise<void> {
     const out: RaiseIntentAgentRequest = {
-        type: 'raiseIntentRequest',
-        payload: arg0.payload,
+        ...arg0,
         meta: {
             source: arg0.meta.source,
             destination: arg0.payload.app,
@@ -153,9 +152,7 @@ export class IntentHandler implements MessageHandler {
         const to = this.pendingResolutions.get(requestId)
         if (to) {
             const out: RaiseIntentAgentResponse = {
-                meta: arg0.meta,
-                type: "raiseIntentResponse",
-                payload: arg0.payload
+                ...arg0
             }
 
             sc.post(out, to)

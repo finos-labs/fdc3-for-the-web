@@ -126,7 +126,7 @@
             "description": "Waits for SecretComms intent, then broadcasts on a private channel",
             "type": "web",
             "details": {
-                "url": "http://robs-pro:8095/static/sp1/index.html"
+                "url": "http://localhost:8095/static/sp1/index.html"
             },
             "hostManifests": {},
             "version": "1.0.0",
@@ -149,7 +149,7 @@
             "description": "Raises SecretComms then listens on the returned private channel",
             "type": "web",
             "details": {
-                "url": "http://robs-pro:8095/static/sp2/index.html"
+                "url": "http://localhost:8095/static/sp2/index.html"
             },
             "hostManifests": {},
             "version": "1.0.0",

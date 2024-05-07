@@ -30,6 +30,9 @@
     },
     {
       "path": "../da-server"
+    },
+    {
+      "path" : "../fdc3-security"
     }
   ]
 }

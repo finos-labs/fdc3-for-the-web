@@ -114,6 +114,7 @@ export class BroadcastHandler implements MessageHandler {
             .forEach(r => {
                 // forward on the broadcast message with added destination details
                 const out = {
+                    ...arg0,
                     meta: {
                         source: arg0.meta.source,
                         destination: {
@@ -122,9 +123,7 @@ export class BroadcastHandler implements MessageHandler {
                         },
                         requestUuid: arg0.meta.requestUuid,
                         timestamp: arg0.meta.timestamp
-                    },
-                    type: arg0.type,
-                    payload: arg0.payload
+                    }
                 } as PrivateChannelBroadcastAgentRequest | BroadcastAgentRequest
 
                 sc.post(out, r)

@@ -3,12 +3,38 @@ import ViteExpress from "vite-express";
 import { Server, Socket } from "socket.io"
 import { APP_HELLO, DA_HELLO, FDC3_APP_EVENT, FDC3_DA_EVENT } from "../message-types";
 import { AppIdentifier } from "@finos/fdc3/dist/bridging/BridgingTypes";
+import { createKeyPair } from "./keys";
 
 const app = express();
+
+const sp1 = createKeyPair()
+const sp2 = createKeyPair()
+
 
 app.get("/iframe", (_, res) => {
   res.send("Hello Vite + TypeScript!");
 });
+
+app.get("/sp1-public-key", async (_, res) => {
+  const jwk = await crypto.subtle.exportKey("jwk", (await sp1).publicKey)
+  res.send(JSON.stringify(jwk))
+})
+
+app.get("/sp2-public-key", async (_, res) => {
+  const jwk = await crypto.subtle.exportKey("jwk", (await sp2).publicKey)
+  res.send(JSON.stringify(jwk))
+})
+
+app.get("/sp1-private-key", async (_, res) => {
+  const jwk = await crypto.subtle.exportKey("jwk", (await sp1).privateKey)
+  res.send(JSON.stringify(jwk))
+})
+
+app.get("/sp2-private-key", async (_, res) => {
+  const jwk = await crypto.subtle.exportKey("jwk", (await sp2).privateKey)
+  res.send(JSON.stringify(jwk))
+})
+
 
 
 const httpServer = ViteExpress.listen(app, 8095, () =>

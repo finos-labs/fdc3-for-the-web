@@ -3466,6 +3466,7 @@ __metadata:
     da-server: "workspace:*"
     express: "npm:^4.18.3"
     fdc3-common: "workspace:*"
+    fdc3-security: "workspace:*"
     nodemon: "npm:^3.0.1"
     socket.io: "npm:^4.7.5"
     socket.io-client: "npm:^4.7.5"
@@ -4604,7 +4605,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"fdc3-security@workspace:packages/fdc3-security":
+"fdc3-security@workspace:*, fdc3-security@workspace:packages/fdc3-security":
   version: 0.0.0-use.local
   resolution: "fdc3-security@workspace:packages/fdc3-security"
   dependencies:

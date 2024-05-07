@@ -10,7 +10,7 @@ import { DesktopAgentIntentResolver } from "../intent-resolution/DesktopAgentInt
 export async function createDesktopAgentAPI(mp: MessagePort, data: APIResponseMessage, options: Options): Promise<DesktopAgent> {
     mp.start()
 
-    const messaging = new MessagePortMessaging(mp, data.appIdentifier)
+    const messaging = new MessagePortMessaging(mp, options.middlewares, data.appIdentifier)
 
     const intentResolver = options.intentResolver ?? new DesktopAgentIntentResolver(messaging, data.resolverUri)
     const userChannelState = buildUserChannelState(messaging)

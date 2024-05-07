@@ -12,8 +12,8 @@ Feature: Cyptographics
     And I refer to "result" as "checker"
     And I call "signer" with parameter "This is a test message"
     Then "{result}" is an object with the following contents
-      | algorithm.name | algorithm.hash.name | publicKeyUrl            |
-      | ECDSA          | SHA-512             | https://blah.com/pubKey |
+      | algorithm.name | algorithm.hash | publicKeyUrl            |
+      | ECDSA          | SHA-512        | https://blah.com/pubKey |
     And I refer to "result" as "signature"
     And I call "checker" with parameters "{signature}" and "This is a test message"
     Then "{result}" is an object with the following contents

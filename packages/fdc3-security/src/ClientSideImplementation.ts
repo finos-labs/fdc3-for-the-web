@@ -3,7 +3,7 @@ import { Check, MessageAuthenticity, MessageSignature, Sign } from "./SigningMid
 
 export const SIGNING_ALGORITHM_DETAILS = {
     name: "ECDSA",
-    hash: { name: "SHA-512" },
+    hash: "SHA-512",
     namedCurve: 'P-521'
 } as EcdsaParams
 

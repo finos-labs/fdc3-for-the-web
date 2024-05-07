@@ -1,7 +1,7 @@
 {
   "name": "fdc3-security",
-  "private": true,
   "version": "0.0.0",
+  "main": "src/index.ts",
   "scripts": {
     "build": "nyc --reporter=lcov --reporter=text cucumber-js"
   },

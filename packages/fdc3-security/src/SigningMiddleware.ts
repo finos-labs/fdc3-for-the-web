@@ -20,7 +20,7 @@ export type MessageAuthenticity = {
 const TYPES_TO_SIGN = [
     'broadcastRequest',
     'raiseIntentRequest',
-    'PrivateChannel.broadcastRequest'
+    'PrivateChannel.broadcast'
 ]
 
 export class SigningMiddleware implements MessagingMiddleware {
@@ -37,7 +37,10 @@ export class SigningMiddleware implements MessagingMiddleware {
         return JSON.stringify({
             type: msg.type,
             payload: msg.payload,
-            meta: msg.meta
+            meta: {
+                timestamp: msg.meta.timestamp,
+                requestUuid: msg.meta.requestUuid
+            }
         })
     }
 

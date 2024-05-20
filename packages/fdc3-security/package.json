@@ -1,9 +1,11 @@
 {
-  "name": "fdc3-security",
-  "version": "0.0.0",
+  "name": "@kite9/fdc3-security",
+  "version": "0.0.17",
   "main": "src/index.ts",
   "scripts": {
-    "build": "nyc --reporter=lcov --reporter=text cucumber-js"
+    "test": "nyc --reporter=lcov --reporter=text cucumber-js",
+    "clean": "rimraf dist; rumraf coverage; rimraf .nyc_output; rimraf cucumber-report.html",
+    "build": "tsc --module es2022"
   },
   "dependencies": {
     "@finos/fdc3": "^2.1.0-beta.6",

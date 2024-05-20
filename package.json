@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "scripts": {
-    "clean": "yarn workspaces foreach --all run clean",
+    "clean": "rimraf .pnp.cjs; rimraf .pnp.loader.mjs; yarn workspaces foreach --all run clean",
     "build": "yarn workspaces foreach --all run build",
     "test": "yarn workspaces foreach --all run test"
   },

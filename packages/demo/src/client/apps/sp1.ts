@@ -1,6 +1,6 @@
 import { Context } from '@finos/fdc3'
-import { getClientAPI } from 'client'
-import { SigningDesktopAgent, Resolver, SIGNING_ALGORITHM_DETAILS, ClientSideImplementation } from 'fdc3-security'
+import { getClientAPI } from '@kite9/client'
+import { SigningDesktopAgent, Resolver, SIGNING_ALGORITHM_DETAILS, ClientSideImplementation } from '@kite9/fdc3-security'
 
 
 let pk: CryptoKey | null = null

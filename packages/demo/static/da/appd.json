@@ -136,7 +136,10 @@
                 "intents": {
                     "listensFor": {
                         "SecretComms": {
-                            "displayName": "Secret Comms Baby!"
+                            "displayName": "Secret Comms Baby!",
+                            "contexts": [
+                                "fdc3.instrument"
+                            ]
                         }
                     }
                 }

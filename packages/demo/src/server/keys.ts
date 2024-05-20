@@ -1,4 +1,4 @@
-import { SIGNING_ALGORITHM_DETAILS } from 'fdc3-security'
+import { SIGNING_ALGORITHM_DETAILS } from '@kite9/fdc3-security'
 
 const params: EcKeyGenParams = {
     ...SIGNING_ALGORITHM_DETAILS,

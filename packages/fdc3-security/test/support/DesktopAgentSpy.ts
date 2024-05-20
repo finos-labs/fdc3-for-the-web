@@ -28,7 +28,7 @@ function addCall(a: Call[], method: string, arg0?: any, arg1?: any, arg2?: any) 
     )
 }
 
-export class MockChannel implements Channel {
+export class MockChannel implements PrivateChannel {
 
     readonly id: string
     readonly type: "user" | "app" | "private"
@@ -39,6 +39,22 @@ export class MockChannel implements Channel {
         this.id = id;
         this.type = type
         this.displayMetadata = displayMetadata
+    }
+
+    onAddContextListener(_handler: (contextType?: string | undefined) => void): Listener {
+        throw new Error("Method not implemented.");
+    }
+
+    onUnsubscribe(_handler: (contextType?: string | undefined) => void): Listener {
+        throw new Error("Method not implemented.");
+    }
+
+    onDisconnect(_handler: () => void): Listener {
+        throw new Error("Method not implemented.");
+    }
+
+    disconnect(): void {
+        throw new Error("Method not implemented.");
     }
 
     call(method: string, arg0?: any, arg1?: any, arg2?: any) {
@@ -71,6 +87,7 @@ const MOCK_CHANNELS = [
 export class DesktopAgentSpy implements DesktopAgent {
 
     tracking: Call[] = []
+    private uc: Channel | undefined = undefined
 
     call(method: string, arg0?: any, arg1?: any, arg2?: any) {
         addCall(this.tracking, method, arg0, arg1, arg2)
@@ -150,8 +167,9 @@ export class DesktopAgentSpy implements DesktopAgent {
     async getUserChannels(): Promise<Channel[]> {
         return MOCK_CHANNELS
     }
-    joinUserChannel(_channelId: string): Promise<void> {
-        throw new Error("Method not implemented.");
+
+    async joinUserChannel(id: string): Promise<void> {
+        this.uc = MOCK_CHANNELS.find(c => c.id == id)
     }
 
     async getOrCreateChannel(channelId: string): Promise<Channel> {
@@ -159,26 +177,32 @@ export class DesktopAgentSpy implements DesktopAgent {
         return new MockChannel(channelId, "app", {})
     }
 
-    createPrivateChannel(): Promise<PrivateChannel> {
-        throw new Error("Method not implemented.");
+    async createPrivateChannel(): Promise<PrivateChannel> {
+        return new MockChannel("priv123", "private", {})
     }
-    getCurrentChannel(): Promise<Channel | null> {
-        throw new Error("Method not implemented.");
+
+    async getCurrentChannel(): Promise<Channel | null> {
+        return this.uc ? this.uc : null;
     }
-    leaveCurrentChannel(): Promise<void> {
-        throw new Error("Method not implemented.");
+
+    async leaveCurrentChannel(): Promise<void> {
+        this.uc = undefined
     }
+
     getInfo(): Promise<ImplementationMetadata> {
         throw new Error("Method not implemented.");
     }
+
     getAppMetadata(_app: AppIdentifier): Promise<AppMetadata> {
         throw new Error("Method not implemented.");
     }
+
     getSystemChannels(): Promise<Channel[]> {
-        throw new Error("Method not implemented.");
+        return this.getUserChannels()
     }
-    joinChannel(_channelId: string): Promise<void> {
-        throw new Error("Method not implemented.");
+
+    async joinChannel(id: string): Promise<void> {
+        return this.joinUserChannel(id)
     }
 
 }

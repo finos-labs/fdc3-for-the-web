@@ -39,4 +39,5 @@ export class SigningDesktopAgent extends AbstractDesktopAgentDelegate {
         const theContextType: string | null = context && handler ? (context as string) : null
         return super.addContextListener(theContextType, wrapContextHandler(this.check, theHandler))
     }
+
 }

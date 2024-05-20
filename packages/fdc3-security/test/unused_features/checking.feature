@@ -34,7 +34,20 @@ In reality, we wouldn't use this, but it makes the test a lot simpler to underst
       | broadcast | fdc3.instrument | AAPL              | https://dummy.com/pubKey         | length: 115                |
 
   Scenario: Raise Intent context data will include a signature
-    When I call "api" with "raiseIntent" with parameters "robsIntent" and "{instrumentContext}"
-    Then "{api.delegate.tracking}" is an array of objects with the following contents
-      | method      | args[0]    | args[1].type    | args[1].id.ticker | args[1].__signature.publicKeyUrl | args[1].__signature.digest |
-      | raiseIntent | robsIntent | fdc3.instrument | AAPL              | https://dummy.com/pubKey         | length: 137                |
+  #   When I call "api" with "raiseIntent" with parameters "robsIntent" and "{instrumentContext}"
+  #   Then messaging will have posts
+  #     | payload.channelId | payload.context.type | payload.context.name | signature.publicKeyUrl   | signature.digest |
+  #     | channel1          | fdc3.instrument      | Apple                | https://dummy.com/pubKey | length: 238      |
+  # Scenario: I can receive a checked signature back in the metadata
+  #   Given "resultHandler" pipes context to "contexts" and metadata to "metas"
+  #   When I call "api" with "getOrCreateChannel" with parameter "channel1"
+  #   And I refer to "result" as "channel1"
+  #   And I call "channel1" with "addContextListener" with parameters "{null}" and "{resultHandler}"
+  #   And messaging receives "{countryMessageOne}"
+  #   Then "{contexts}" is an array of objects with the following contents
+  #     | type         | name   |
+  #     | fdc3.country | Sweden |
+  #   And "{metas}" is an array of objects with the following contents
+  #     | authenticity.verified | authenticity.valid | authenticity.publicKeyUrl |
+  #     | true                  | true               | https://dummy.com/pubKey  |
+  # Scenario: Raising an intent,

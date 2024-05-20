@@ -1,4 +1,3 @@
-import { MessagingMiddleware } from 'fdc3-common'
 
 export type Sign = (msg: string) => Promise<MessageSignature>
 export type Check = (p: MessageSignature, msg: string) => Promise<MessageAuthenticity>

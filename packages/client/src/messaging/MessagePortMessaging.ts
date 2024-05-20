@@ -1,7 +1,7 @@
 import { AppIdentifier } from "@finos/fdc3"
 import { AbstractMessaging } from "da-proxy"
 import { RegisterableListener } from "da-proxy/src/listeners/RegisterableListener"
-import { MessagingMiddleware, exchangePostMessage } from "fdc3-common"
+import { exchangePostMessage } from "fdc3-common"
 import { v4 as uuidv4 } from "uuid"
 
 export class MessagePortMessaging extends AbstractMessaging {
@@ -10,8 +10,8 @@ export class MessagePortMessaging extends AbstractMessaging {
     private readonly mp: MessagePort
     private readonly listeners: Map<string, RegisterableListener> = new Map()
 
-    constructor(mp: MessagePort, middlewares: MessagingMiddleware[], appId: AppIdentifier) {
-        super(middlewares)
+    constructor(mp: MessagePort, appId: AppIdentifier) {
+        super()
         this.appId = appId
         this.mp = mp;
 
@@ -32,12 +32,12 @@ export class MessagePortMessaging extends AbstractMessaging {
         return uuidv4();
     }
 
-    innerPost(message: object): Promise<void> {
+    post(message: object): Promise<void> {
         this.mp.postMessage(message);
         return Promise.resolve();
     }
 
-    innerRegister(l: RegisterableListener): void {
+    register(l: RegisterableListener): void {
         this.listeners.set(l.getId(), l)
     }
 

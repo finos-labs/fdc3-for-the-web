@@ -17,14 +17,15 @@ export type Resolver = (url: string) => Promise<JsonWebKey>
 export class ClientSideImplementation {
 
     initSigner(privateKey: CryptoKey, publicKeyUrl: string): Sign {
-        return async (msg: string) => {
+        return async (msg: string, date: Date) => {
             const buffer = await crypto.subtle.sign(SIGNING_ALGORITHM_DETAILS, privateKey, new TextEncoder().encode(msg))
             const digest = btoa(String.fromCharCode(...new Uint8Array(buffer)));
 
             return {
                 algorithm: SIGNING_ALGORITHM_DETAILS,
                 publicKeyUrl,
-                digest
+                digest,
+                date: date.toISOString()
             } as MessageSignature
         }
     }
@@ -35,7 +36,7 @@ export class ClientSideImplementation {
         }
     }
 
-    initChecker(resolver: Resolver): Check {
+    initChecker(resolver: Resolver, timeWindowMS: number = 2000): Check {
         return async (p: MessageSignature, msg: string): Promise<MessageAuthenticity> => {
 
             function base64ToArrayBuffer(base64: string) {
@@ -51,9 +52,13 @@ export class ClientSideImplementation {
             const jsonWebKey = await resolver(p.publicKeyUrl)
             const publicKey = await crypto.subtle.importKey("jwk", jsonWebKey, SIGNING_ALGORITHM_DETAILS, true, ["verify"])
             const validated = await crypto.subtle.verify(p.algorithm, publicKey, base64ToArrayBuffer(p.digest), new TextEncoder().encode(msg))
+            const timeNow = new Date()
+            const messageTime = new Date(p.date)
+            const timeOk = (timeNow.getTime() - messageTime.getTime()) < timeWindowMS
+
             return {
                 verified: true,
-                valid: validated,
+                valid: validated && timeOk,
                 publicKeyUrl: p.publicKeyUrl,
             }
         }

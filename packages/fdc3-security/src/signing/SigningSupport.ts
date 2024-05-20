@@ -1,4 +1,4 @@
-import { Channel, Context, ContextHandler, ContextMetadata } from "@finos/fdc3"
+import { Channel, Context, ContextHandler, ContextMetadata, IntentHandler } from "@finos/fdc3"
 
 export type Sign = (msg: string, date: Date) => Promise<MessageSignature>
 export type Check = (p: MessageSignature, msg: string) => Promise<MessageAuthenticity>
@@ -15,7 +15,7 @@ export type MessageSignature = {
     digest: string,
     publicKeyUrl: string,
     algorithm: any,
-    date: Date
+    date: string
 }
 
 export type MessageAuthenticity = {
@@ -28,7 +28,7 @@ export type ContextMetadataWithAuthenticity = ContextMetadata & {
     authenticity?: MessageAuthenticity
 }
 
-export async function contentToSign(context: Context, timestamp: Date, intent?: string, channelId?: string): Promise<string> {
+export async function contentToSign(context: Context, timestamp: string, intent?: string, channelId?: string): Promise<string> {
     return JSON.stringify({
         context,
         intent,
@@ -40,7 +40,7 @@ export async function contentToSign(context: Context, timestamp: Date, intent?: 
 export async function signedContext(sign: Sign, context: Context, intent?: string, channelId?: string): Promise<Context> {
     delete context[SIGNATURE_KEY]
     const ts = new Date()
-    return sign(await contentToSign(context, ts, intent, channelId), ts).then(sig => {
+    return sign(await contentToSign(context, JSON.stringify(ts), intent, channelId), ts).then(sig => {
         context[SIGNATURE_KEY] = sig
         return context
     })
@@ -69,4 +69,28 @@ export function wrapContextHandler(check: Check, handler: ContextHandler, channe
     }
 
     return out as ContextHandler
+}
+
+export function wrapIntentHandler(check: Check, handler: IntentHandler, intentName: string): IntentHandler {
+    const out = (c: Context, m: ContextMetadataWithAuthenticity) => {
+
+        if (c[SIGNATURE_KEY]) {
+            // context is signed, so check it.
+            const signature = c[SIGNATURE_KEY] as MessageSignature
+            delete c[SIGNATURE_KEY]
+
+            contentToSign(c, signature.date, intentName)
+                .then(messageToCheck => check(signature, messageToCheck))
+                .then(r => {
+                    const m2: ContextMetadataWithAuthenticity = (m == undefined) ? {} as ContextMetadataWithAuthenticity : m
+                    m2[AUTHENTICITY_KEY] = r
+                    handler(c, m2)
+                })
+        } else {
+            delete m[AUTHENTICITY_KEY]
+            return handler(c, m)
+        }
+    }
+
+    return out as IntentHandler
 }

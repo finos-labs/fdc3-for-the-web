@@ -6,6 +6,18 @@ Feature: Signing Broadcasts
     Given "instrumentContextAC" is a "fdc3.instrument" context with dummy signature field length 142
     Given "instrumentContextUC" is a "fdc3.instrument" context with dummy signature field length 119
     Given "instrumentContextPC" is a "fdc3.instrument" context with dummy signature field length 141
+    Given "instrumentContextIH" is a "fdc3.instrument" context with dummy signature field length 139
+
+  Scenario: Intent Handler receives a checked signature back in the metadata
+    Given "resultHandler" pipes context to "contexts" and metadata to "metas"
+    And I call "api" with "addIntentListener" with parameters "viewNews" and "{resultHandler}"
+    And I call "{api.delegate.handlers.viewNews}" with parameter "{instrumentContextIH}"
+    Then "{contexts}" is an array of objects with the following contents
+      | type            | name  |
+      | fdc3.instrument | Apple |
+    And "{metas}" is an array of objects with the following contents
+      | authenticity.verified | authenticity.valid | authenticity.publicKeyUrl |
+      | true                  | true               | https://dummy.com/pubKey  |
 
   Scenario: App Channel Context Handler receives a checked signature back in the metadata
     Given "resultHandler" pipes context to "contexts" and metadata to "metas"

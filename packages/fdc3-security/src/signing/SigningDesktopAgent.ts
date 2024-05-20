@@ -1,7 +1,7 @@
-import { DesktopAgent, Context, IntentResolution, Listener, ContextHandler, Channel } from "@finos/fdc3";
+import { DesktopAgent, Context, IntentResolution, Listener, ContextHandler, Channel, IntentHandler } from "@finos/fdc3";
 import { AbstractDesktopAgentDelegate } from "../delegates/AbstractDesktopAgentDelegate";
 import { SigningChannelDelegate } from "./SigningChannelDelegate";
-import { Check, Sign, signedContext, wrapContextHandler } from "./SigningSupport";
+import { Check, Sign, signedContext, wrapContextHandler, wrapIntentHandler } from "./SigningSupport";
 
 /**
  * This implementation adds signing functionality to any broadcast context
@@ -38,6 +38,10 @@ export class SigningDesktopAgent extends AbstractDesktopAgentDelegate {
         const theHandler: ContextHandler = handler ? handler : (context as ContextHandler)
         const theContextType: string | null = context && handler ? (context as string) : null
         return super.addContextListener(theContextType, wrapContextHandler(this.check, theHandler, () => this.getCurrentChannel()))
+    }
+
+    addIntentListener(intent: string, handler: IntentHandler): Promise<Listener> {
+        return super.addIntentListener(intent, wrapIntentHandler(this.check, handler, intent))
     }
 
 }

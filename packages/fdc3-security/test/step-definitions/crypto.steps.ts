@@ -18,6 +18,9 @@ Given('A Client Side Implementation in {string}', function (this: CustomWorld, f
     this.props[field] = new ClientSideImplementation()
 })
 
+Given('A timestamp in {string}', function (this: CustomWorld, field: string) {
+    this.props[field] = new Date()
+})
 
 Given('A Local URL Resolver in {string} resolving {string} to {string}', function (this: CustomWorld, field: string, url: string, field2: string) {
     const out = (x: string) => {

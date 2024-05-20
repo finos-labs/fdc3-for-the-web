@@ -34,7 +34,7 @@ export class MockChannel implements PrivateChannel {
     readonly type: "user" | "app" | "private"
     readonly displayMetadata: DisplayMetadata
     public tracking: Call[] = []
-    public handlers: { [type: string]: ContextHandler } = {}
+    public handlers: { [type: string]: ContextHandler | IntentHandler } = {}
 
     constructor(id: string, type: "user" | "app" | "private", displayMetadata: DisplayMetadata) {
         this.id = id;
@@ -164,8 +164,11 @@ export class DesktopAgentSpy implements DesktopAgent {
         } as IntentResolution
     }
 
-    addIntentListener(_intent: string, _handler: IntentHandler): Promise<Listener> {
-        throw new Error("Method not implemented.");
+    async addIntentListener(intent: string, handler: IntentHandler): Promise<Listener> {
+        this.handlers[intent] = handler
+        return {
+
+        } as Listener
     }
 
     async addContextListener(context: string | null | ContextHandler, handler?: ContextHandler): Promise<Listener> {

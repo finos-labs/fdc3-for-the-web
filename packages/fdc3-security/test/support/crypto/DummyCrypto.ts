@@ -8,7 +8,7 @@ export const dummySign: Sign = async (msg: string, date: Date) => {
         digest: "length: " + msg.length,
         publicKeyUrl: "https://dummy.com/pubKey",
         algorithm: "LENGTH-CHECK",
-        date
+        date: date.toISOString()
     } as MessageSignature
     return out;
 }

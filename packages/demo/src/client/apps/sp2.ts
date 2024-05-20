@@ -1,6 +1,5 @@
 import { PrivateChannel } from '@finos/fdc3';
 import { getClientAPI } from 'client'
-import { Options } from 'fdc3-common';
 import { SigningDesktopAgent, Resolver, SIGNING_ALGORITHM_DETAILS, ClientSideImplementation } from 'fdc3-security'
 
 
@@ -30,7 +29,7 @@ function doIt() {
             const csi = new ClientSideImplementation()
 
             return new SigningDesktopAgent(fdc3,
-                csi.initSigner(pk, "/sp1-public-key"),
+                csi.initSigner(pk as CryptoKey, "/sp1-public-key"),
                 csi.initChecker(resolver))
 
         }).then(async fdc3 => {

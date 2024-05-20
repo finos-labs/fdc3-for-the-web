@@ -1,6 +1,6 @@
 import { DesktopAgent } from "@finos/fdc3";
 import { BasicDesktopAgent, DefaultChannelSupport, DefaultAppSupport, DefaultIntentSupport, DefaultChannel, DefaultHandshakeSupport } from "da-proxy";
-import { APIResponseMessage, FDC3_PORT_TRANSFER_RESPONSE_TYPE, FDC3_PORT_TRANSFER_REQUEST_TYPE, Options, exchangeForMessagePort, APIResponseMessageParentWindow, APIResponseMessageIFrame } from "fdc3-common"
+import { APIResponseMessage, FDC3_PORT_TRANSFER_RESPONSE_TYPE, Options, exchangeForMessagePort, APIResponseMessageIFrame } from "fdc3-common"
 import { MessagePortMessaging } from "./MessagePortMessaging";
 import { DesktopAgentIntentResolver } from "../intent-resolution/DesktopAgentIntentResolver";
 
@@ -10,7 +10,7 @@ import { DesktopAgentIntentResolver } from "../intent-resolution/DesktopAgentInt
 export async function createDesktopAgentAPI(mp: MessagePort, data: APIResponseMessage, options: Options): Promise<DesktopAgent> {
     mp.start()
 
-    const messaging = new MessagePortMessaging(mp, options.middlewares, data.appIdentifier)
+    const messaging = new MessagePortMessaging(mp, data.appIdentifier)
 
     const intentResolver = options.intentResolver ?? new DesktopAgentIntentResolver(messaging, data.resolverUri)
     const userChannelState = buildUserChannelState(messaging)

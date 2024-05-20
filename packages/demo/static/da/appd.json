@@ -119,7 +119,7 @@
             "publisher": "FINOS",
             "icons": []
         },
-         {
+        {
             "appId": "sp1",
             "name": "Security POC 1",
             "title": "Security POC 1: Send On Private Channel",

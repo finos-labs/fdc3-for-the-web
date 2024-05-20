@@ -26,7 +26,7 @@ export class SigningDesktopAgent extends AbstractDesktopAgentDelegate {
         return signedContext(this.sign, context).then(sc => super.broadcast(sc))
     }
 
-    raiseIntent(intentName: string, context: Context, a3: any): Promise<IntentResolution> {
+    raiseIntent(intentName: string, context: Context, a3?: any): Promise<IntentResolution> {
         return signedContext(this.sign, context, intentName).then(sc => super.raiseIntent(intentName, sc, a3))
     }
 

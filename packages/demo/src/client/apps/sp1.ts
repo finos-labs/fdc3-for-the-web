@@ -23,7 +23,7 @@ fetch('/sp1-private-key')
         const csi = new ClientSideImplementation()
 
         return new SigningDesktopAgent(fdc3,
-            csi.initSigner(pk, "/sp1-public-key"),
+            csi.initSigner(pk as CryptoKey, "/sp1-public-key"),
             csi.initChecker(resolver))
 
     }).then(async fdc3 => {

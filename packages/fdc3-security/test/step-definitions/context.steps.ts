@@ -1,5 +1,7 @@
 import { Given } from '@cucumber/cucumber'
 import { CustomWorld } from '../world/index';
+import { Context, ContextMetadata } from '@finos/fdc3';
+import { SIGNATURE_KEY } from '../../src/signing/SigningSupport';
 
 const contextMap: Record<string, any> = {
   "fdc3.instrument": {
@@ -25,6 +27,29 @@ const contextMap: Record<string, any> = {
 
 Given('{string} is a {string} context', function (this: CustomWorld, field: string, type: string) {
   this.props[field] = contextMap[type];
+})
+
+Given('{string} is a {string} context with dummy signature field length {int}', function (this: CustomWorld, field: string, type: string, length: number) {
+  const sigField = {
+    "digest": "length: " + length,
+    "publicKeyUrl": "https://dummy.com/pubKey",
+    "algorithm": "LENGTH-CHECK",
+    "date": JSON.stringify(new Date())
+  }
+
+  const copy = JSON.parse(JSON.stringify(contextMap[type]));
+  copy[SIGNATURE_KEY] = sigField
+  this.props[field] = copy
+})
+
+
+Given('{string} pipes context to {string} and metadata to {string}', function (this: CustomWorld, contextHandlerName: string, field: string, field2: string) {
+  this.props[field] = []
+  this.props[field2] = []
+  this.props[contextHandlerName] = (context: Context, metadata: ContextMetadata) => {
+    this.props[field].push(context)
+    this.props[field2].push(metadata)
+  }
 })
 
 // Given('{string} is a {string} message on channel {string} with context {string} and signature {string}', function (this: CustomWorld, field: string, type: string, channel: string, context: string, signature: string) {

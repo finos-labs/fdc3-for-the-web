@@ -37,7 +37,7 @@ export class SigningDesktopAgent extends AbstractDesktopAgentDelegate {
     addContextListener(context: any, handler?: any): Promise<Listener> {
         const theHandler: ContextHandler = handler ? handler : (context as ContextHandler)
         const theContextType: string | null = context && handler ? (context as string) : null
-        return super.addContextListener(theContextType, wrapContextHandler(this.check, theHandler))
+        return super.addContextListener(theContextType, wrapContextHandler(this.check, theHandler, () => this.getCurrentChannel()))
     }
 
 }

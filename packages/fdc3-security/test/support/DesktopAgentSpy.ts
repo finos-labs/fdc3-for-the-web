@@ -34,6 +34,7 @@ export class MockChannel implements PrivateChannel {
     readonly type: "user" | "app" | "private"
     readonly displayMetadata: DisplayMetadata
     public tracking: Call[] = []
+    public handlers: { [type: string]: ContextHandler } = {}
 
     constructor(id: string, type: "user" | "app" | "private", displayMetadata: DisplayMetadata) {
         this.id = id;
@@ -70,8 +71,13 @@ export class MockChannel implements PrivateChannel {
         return null
     }
 
-    addContextListener(_contextType: string | null | ContextHandler, _handler?: ContextHandler): Promise<Listener> {
-        throw new Error("Method not implemented.");
+    async addContextListener(context: string | null | ContextHandler, handler?: ContextHandler): Promise<Listener> {
+        const theHandler: ContextHandler = handler ? handler : (context as ContextHandler)
+        const theContextType: string | null = context && handler ? (context as string) : "any"
+        this.handlers[theContextType] = theHandler
+        return {
+
+        } as Listener
     }
 }
 
@@ -88,6 +94,8 @@ export class DesktopAgentSpy implements DesktopAgent {
 
     tracking: Call[] = []
     private uc: Channel | undefined = undefined
+    public handlers: { [type: string]: ContextHandler } = {}
+
 
     call(method: string, arg0?: any, arg1?: any, arg2?: any) {
         addCall(this.tracking, method, arg0, arg1, arg2)
@@ -159,11 +167,16 @@ export class DesktopAgentSpy implements DesktopAgent {
     addIntentListener(_intent: string, _handler: IntentHandler): Promise<Listener> {
         throw new Error("Method not implemented.");
     }
-    addContextListener(contextType: string | null, handler: ContextHandler): Promise<Listener>;
-    addContextListener(handler: ContextHandler): Promise<Listener>;
-    addContextListener(_contextType: unknown, _handler?: unknown): Promise<Listener> {
-        throw new Error("Method not implemented.");
+
+    async addContextListener(context: string | null | ContextHandler, handler?: ContextHandler): Promise<Listener> {
+        const theHandler: ContextHandler = handler ? handler : (context as ContextHandler)
+        const theContextType: string | null = context && handler ? (context as string) : "any"
+        this.handlers[theContextType] = theHandler
+        return {
+
+        } as Listener
     }
+
     async getUserChannels(): Promise<Channel[]> {
         return MOCK_CHANNELS
     }

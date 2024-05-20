@@ -69,7 +69,7 @@ When('I call {string} with {string} with parameter {string}', async function (th
 
 When('I call {string} with parameter {string}', async function (this: CustomWorld, fnName: string, param: string) {
     try {
-        const fn = this.props[fnName];
+        const fn = handleResolve(fnName, this);
         const result = await fn(handleResolve(param, this))
         this.props['result'] = result;
     } catch (error) {

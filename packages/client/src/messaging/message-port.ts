@@ -1,6 +1,6 @@
 import { DesktopAgent } from "@finos/fdc3";
-import { BasicDesktopAgent, DefaultChannelSupport, DefaultAppSupport, DefaultIntentSupport, DefaultChannel, DefaultHandshakeSupport } from "da-proxy";
-import { APIResponseMessage, FDC3_PORT_TRANSFER_RESPONSE_TYPE, Options, exchangeForMessagePort, APIResponseMessageIFrame } from "fdc3-common"
+import { BasicDesktopAgent, DefaultChannelSupport, DefaultAppSupport, DefaultIntentSupport, DefaultChannel, DefaultHandshakeSupport } from "@kite9/da-proxy";
+import { APIResponseMessage, FDC3_PORT_TRANSFER_RESPONSE_TYPE, Options, exchangeForMessagePort, APIResponseMessageIFrame } from "@kite9/fdc3-common"
 import { MessagePortMessaging } from "./MessagePortMessaging";
 import { DesktopAgentIntentResolver } from "../intent-resolution/DesktopAgentIntentResolver";
 

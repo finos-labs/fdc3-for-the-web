@@ -1,16 +1,16 @@
-import { AppMetadata, ErrorMessage, FindIntentAgentRequest, FindIntentAgentResponse, RaiseIntentAgentErrorResponse, RaiseIntentAgentRequest, RaiseIntentAgentResponse, RaiseIntentResultAgentResponse } from "@finos/fdc3/dist/bridging/BridgingTypes";
+import { AppMetadata, ErrorMessage, FindIntentAgentRequest, FindIntentAgentResponse, FindIntentsByContextAgentRequest, FindIntentsByContextAgentResponse, RaiseIntentAgentErrorResponse, RaiseIntentAgentRequest, RaiseIntentAgentResponse, RaiseIntentResultAgentResponse } from "@finos/fdc3/dist/bridging/BridgingTypes";
 import { MessageHandler } from "../BasicFDC3Server";
 import { ServerContext } from "../ServerContext";
 import { Directory } from "../directory/DirectoryInterface";
 import { genericResultTypeSame } from "../directory/BasicDirectory";
-import { ResolveError } from "@finos/fdc3";
-import { IntentResolutionChoiceAgentRequest, IntentResolutionChoiceAgentResponse, OnAddIntentListenerAgentRequest, OnUnsubscribeIntentListenerAgentRequest } from "fdc3-common";
+import { AppIntent, ResolveError } from "@finos/fdc3";
+import { IntentResolutionChoiceAgentRequest, IntentResolutionChoiceAgentResponse, OnAddIntentListenerAgentRequest, OnUnsubscribeIntentListenerAgentRequest } from "@kite9/fdc3-common";
 
 
 type ListenerRegistration = {
     appId: string | undefined,
     instanceId: string | undefined,
-    intentName: string,
+    intentName: string | undefined,
     contextType: string | undefined,
     resultType: string | undefined
 }
@@ -131,6 +131,7 @@ export class IntentHandler implements MessageHandler {
 
     async accept(msg: any, sc: ServerContext, from: AppMetadata): Promise<void> {
         switch (msg.type as string) {
+            case 'findIntentsByContextRequest': return this.findIntentsByContextRequest(msg as FindIntentsByContextAgentRequest, sc, from)
             case 'findIntentRequest': return this.findIntentRequest(msg as FindIntentAgentRequest, sc, from)
             case 'raiseIntentRequest': return this.raiseIntentRequest(msg as RaiseIntentAgentRequest, sc)
             case 'onAddIntentListener': return this.onAddIntentListener(msg as OnAddIntentListenerAgentRequest, sc)
@@ -199,7 +200,7 @@ export class IntentHandler implements MessageHandler {
         const target = arg0.payload.app
         if (target.instanceId) {
             // ok, targeting a specific, known instance
-            if (await sc.isAppOpen(target)) {
+            if (await sc.isAppConnected(target)) {
                 return forwardRequest(arg0, target, sc, this)
             } else {
                 // instance doesn't exist
@@ -216,17 +217,54 @@ export class IntentHandler implements MessageHandler {
         }
     }
 
+    findIntentsByContextRequest(r: FindIntentsByContextAgentRequest, sc: ServerContext, from: AppMetadata): void {
+
+        // TODO: Add result type
+        const { context } = r.payload
+
+        const apps1 = this.directory.retrieveIntents(context?.type, undefined, undefined)
+
+        // fold apps so same intents aren't duplicated
+        const apps2: AppIntent[] = []
+        apps1.forEach(a1 => {
+            const existing = apps2.find(a2 => a2.intent.name == a1.intentName)
+            if (existing) {
+                existing.apps.push({ appId: a1.appId })
+            } else {
+                apps2.push({
+                    intent: {
+                        name: a1.intentName,
+                        displayName: a1.displayName ?? a1.intentName
+                    },
+                    apps: [
+                        {
+                            appId: a1.appId
+                        }
+                    ]
+                })
+            }
+        })
+
+        const out = {
+            meta: {
+                requestUuid: r.meta.requestUuid,
+                timestamp: new Date(),
+                responseUuid: sc.createUUID()
+            },
+            type: "findIntentsByContextResponse",
+            payload: {
+                appIntents: apps2
+            }
+        } as FindIntentsByContextAgentResponse
+
+        sc.post(out, from)
+    }
+
+
     findIntentRequest(r: FindIntentAgentRequest, sc: ServerContext, from: AppMetadata): void {
         const { intent, context, resultType } = r.payload
 
-        const apps1 = this.directory.retrieveApps(context?.type, intent, resultType)
-            .map(a => {
-                return {
-                    appId: a.appId,
-                }
-            }) as AppMetadata[]
-
-        const apps2 = this.retrieveListeners(context?.type, intent, resultType).
+        const apps2 = this.retrieveListeners(context?.type, intent, resultType, sc).
             map(lr => {
                 return {
                     appId: lr.appId,
@@ -234,6 +272,21 @@ export class IntentHandler implements MessageHandler {
                 }
             }) as AppMetadata[]
 
+        const apps1 = this.directory.retrieveApps(context?.type, intent, resultType)
+            .map(a => {
+                return {
+                    appId: a.appId,
+                }
+            })
+            .filter(i => {
+                // remove any directory entries that are already started
+                const running = apps2.find(i2 => i2.appId == i.appId)
+                return !running
+            }) as AppMetadata[]
+
+        // just need this for the (deprecated) display name
+        const allMatchingIntents = this.directory.retrieveIntents(context?.type, intent, resultType)
+        const displayName = (allMatchingIntents.length > 0) ? allMatchingIntents[0].displayName : undefined
 
         const out = {
             meta: {
@@ -245,7 +298,8 @@ export class IntentHandler implements MessageHandler {
             payload: {
                 appIntent: {
                     intent: {
-                        name: r.payload.intent
+                        name: intent,
+                        displayName
                     },
                     apps: [...apps1, ...apps2]
                 }
@@ -255,7 +309,7 @@ export class IntentHandler implements MessageHandler {
         sc.post(out, from)
     }
 
-    retrieveListeners(contextType: string | undefined, intentName: string, resultType: string | undefined): ListenerRegistration[] {
+    retrieveListeners(contextType: string | undefined, intentName: string | undefined, resultType: string | undefined, sc: ServerContext): ListenerRegistration[] {
         const template: ListenerRegistration = {
             appId: undefined,
             instanceId: undefined,
@@ -264,6 +318,14 @@ export class IntentHandler implements MessageHandler {
             resultType
         }
 
-        return this.regs.filter(r => matches(template, r))
+        const matching = this.regs.filter(r => matches(template, r))
+        const active = matching.filter(async r => await sc.isAppConnected({
+            instanceId: r.instanceId,
+            appId: r.appId!!
+        }))
+
+        return active
     }
+
+
 }

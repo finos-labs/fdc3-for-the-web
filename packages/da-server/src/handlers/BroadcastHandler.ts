@@ -7,7 +7,7 @@ import {
     PrivateChannelBroadcastAgentRequest
 } from "@finos/fdc3/dist/bridging/BridgingTypes";
 import { ContextElement } from "@finos/fdc3";
-import { OnAddContextListenerAgentRequest, OnUnsubscribeAgentRequest } from "fdc3-common";
+import { OnAddContextListenerAgentRequest, OnUnsubscribeAgentRequest } from "@kite9/fdc3-common";
 
 type ListenerRegistration = {
     appId: string,
@@ -87,6 +87,7 @@ export class BroadcastHandler implements MessageHandler {
         }
 
         sc.post(out, from)
+
     }
 
     handleOnUnsubscribe(arg0: PrivateChannelOnUnsubscribeAgentRequest | OnUnsubscribeAgentRequest, _sc: ServerContext) {

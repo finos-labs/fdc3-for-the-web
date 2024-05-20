@@ -1,7 +1,7 @@
 import { PrivateChannel } from '@finos/fdc3';
 import { getClientAPI } from 'client'
 import { Options } from 'fdc3-common';
-import { ClientSideImplementation, Resolver, SIGNING_ALGORITHM_DETAILS, SigningMiddleware } from 'fdc3-security';
+import { SigningDesktopAgent, Resolver, SIGNING_ALGORITHM_DETAILS, ClientSideImplementation } from 'fdc3-security'
 
 
 
@@ -9,28 +9,32 @@ import { ClientSideImplementation, Resolver, SIGNING_ALGORITHM_DETAILS, SigningM
  * Gets the private channel via a raise Intent then spools the output
  */
 function doIt() {
+
+    let pk: CryptoKey | null = null
+
+    const resolver: Resolver = (u: string) => {
+        return fetch(u)
+            .then(r => r.json())
+    }
+
     fetch('/sp2-private-key')
         .then(r => r.json())
         .then(j => {
             return crypto.subtle.importKey("jwk", j, SIGNING_ALGORITHM_DETAILS, true, ["sign"])
         }).then(privateKey => {
+            pk = privateKey
+
+            return getClientAPI()
+        }).then(fdc3 => {
+
             const csi = new ClientSideImplementation()
 
-            const resolver: Resolver = (u) => {
-                return fetch(u)
-                    .then(r => r.json())
-            }
-
-            const signingMiddleware = new SigningMiddleware(
-                csi.initSigner(privateKey, "/sp2-public-key"),
+            return new SigningDesktopAgent(fdc3,
+                csi.initSigner(pk, "/sp1-public-key"),
                 csi.initChecker(resolver))
 
-            const OPTIONS: Options = {
-                middlewares: [signingMiddleware]
-            }
-
-            return getClientAPI(OPTIONS)
         }).then(async fdc3 => {
+            console.log("in promise")
             console.log("in promise")
             const log = document.getElementById("log");
             const reso = await fdc3.raiseIntent("SecretComms", {

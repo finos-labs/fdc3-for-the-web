@@ -7,7 +7,6 @@ import { CustomWorld } from '../world/index';
 import { BasicDesktopAgent, DefaultAppSupport, DefaultChannelSupport, DefaultIntentSupport, DefaultHandshakeSupport } from '../../src';
 import { IntentResolver, SingleAppIntent } from 'fdc3-common';
 import { AppIntent, IntentResult } from '@finos/fdc3';
-import { LoggingMiddleware } from '../support/LoggingMiddleware';
 
 /**
  * This super-simple intent resolver just resolves to the first
@@ -43,7 +42,6 @@ Given('A Desktop Agent in {string}', async function (this: CustomWorld, field: s
 
     if (!this.messaging) {
         this.messaging = new TestMessaging(
-            [new LoggingMiddleware()],
             this.props[CHANNEL_STATE]);
     }
 

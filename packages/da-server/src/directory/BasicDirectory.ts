@@ -43,6 +43,7 @@ export class BasicDirectory implements Directory {
         const lfAugmented = lfa.map(([key, value]) => {
             return {
                 intentName: key,
+                contexts: value?.contexts ?? [],
                 ...value,
                 appId: a.appId
             }

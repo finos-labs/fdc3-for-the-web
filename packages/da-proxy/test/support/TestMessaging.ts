@@ -11,7 +11,6 @@ import { GetAppMetadata } from "./responses/GetAppMetadata";
 import { FindInstances } from "./responses/FindInstances";
 import { Open } from "./responses/Open";
 import { Handshake } from "./responses/Handshake";
-import { MessagingMiddleware } from "fdc3-common";
 
 export interface IntentDetail {
     app?: AppIdentifier,
@@ -91,8 +90,8 @@ export class TestMessaging extends AbstractMessaging {
         new Handshake()
     ]
 
-    constructor(middlewares: MessagingMiddleware[], channelState: { [key: string]: ContextElement[] }) {
-        super(middlewares)
+    constructor(channelState: { [key: string]: ContextElement[] }) {
+        super()
         this.channelState = channelState
     }
 
@@ -108,7 +107,7 @@ export class TestMessaging extends AbstractMessaging {
     }
 
 
-    innerPost(message: AgentRequestMessage): Promise<void> {
+    post(message: AgentRequestMessage): Promise<void> {
         this.allPosts.push(message)
 
         for (let i = 0; i < this.automaticResponses.length; i++) {
@@ -125,7 +124,7 @@ export class TestMessaging extends AbstractMessaging {
         this.intentDetails.push(id)
     }
 
-    innerRegister(l: RegisterableListener) {
+    register(l: RegisterableListener) {
         this.listeners.set(l.getId(), l)
     }
 

@@ -1,33 +1,35 @@
 import { Context } from '@finos/fdc3'
 import { getClientAPI } from 'client'
-import { Options } from 'fdc3-common';
-import { ClientSideImplementation, Resolver, SIGNING_ALGORITHM_DETAILS, SigningMiddleware } from 'fdc3-security'
+import { SigningDesktopAgent, Resolver, SIGNING_ALGORITHM_DETAILS, ClientSideImplementation } from 'fdc3-security'
+
+
+let pk: CryptoKey | null = null
+
+const resolver: Resolver = (u: string) => {
+    return fetch(u)
+        .then(r => r.json())
+}
 
 fetch('/sp1-private-key')
     .then(r => r.json())
     .then(j => {
         return crypto.subtle.importKey("jwk", j, SIGNING_ALGORITHM_DETAILS, true, ["sign"])
     }).then(privateKey => {
+        pk = privateKey
+
+        return getClientAPI()
+    }).then(fdc3 => {
+
         const csi = new ClientSideImplementation()
 
-        const resolver: Resolver = (u) => {
-            return fetch(u)
-                .then(r => r.json())
-        }
-
-        const signingMiddleware = new SigningMiddleware(
-            csi.initSigner(privateKey, "/sp1-public-key"),
+        return new SigningDesktopAgent(fdc3,
+            csi.initSigner(pk, "/sp1-public-key"),
             csi.initChecker(resolver))
 
-        const OPTIONS: Options = {
-            middlewares: [signingMiddleware]
-        }
-
-        return getClientAPI(OPTIONS)
     }).then(async fdc3 => {
         console.log("in promise")
 
-        fdc3.addIntentListener("SecretComms", async context => {
+        fdc3.addIntentListener("SecretComms", async (context) => {
             const pc = await fdc3.createPrivateChannel()
             const msg = document.createElement("p");
             msg.textContent = "Created private channel!: " + JSON.stringify(pc);

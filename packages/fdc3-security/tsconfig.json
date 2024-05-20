@@ -6,13 +6,5 @@
       "test"
     ],
     "outDir": "dist",
-  },
-  "references": [
-    {
-      "path": "../fdc3-common"
-    },
-    {
-      "path": "../da-proxy"
-    }
-  ]
+  }
 }

@@ -1,30 +1,13 @@
-import { DesktopAgent, Context, IntentResolution } from "@finos/fdc3";
-import { DesktopAgentDelegate } from "../delegates/DesktopAgentDelegate";
-import { Check, Sign } from "../SigningMiddleware";
-
-
-/**
- * This is the field that is added to the context object to contain the signature
- */
-export const SIGNATURE_KEY = "__signature"
-
-export type MessageSignature = {
-    digest: string,
-    publicKeyUrl: string,
-    algorithm: any
-}
-
-export type MessageAuthenticity = {
-    verified: boolean,
-    valid: boolean,
-    publicKeyUrl: string
-}
+import { DesktopAgent, Context, IntentResolution, Listener, ContextHandler, Channel } from "@finos/fdc3";
+import { AbstractDesktopAgentDelegate } from "../delegates/AbstractDesktopAgentDelegate";
+import { SigningChannelDelegate } from "./SigningChannelDelegate";
+import { Check, Sign, signedContext, wrapContextHandler } from "./SigningSupport";
 
 /**
  * This implementation adds signing functionality to any broadcast context
  * and allows for the checking of signatures on items returned.
  */
-export class SigningDesktopAgent extends DesktopAgentDelegate {
+export class SigningDesktopAgent extends AbstractDesktopAgentDelegate {
 
     private readonly sign: Sign
     private readonly check: Check
@@ -35,26 +18,25 @@ export class SigningDesktopAgent extends DesktopAgentDelegate {
         this.check = check
     }
 
-    contentToSign(context: Context, intent?: string, channelId?: string) {
-        const timestamp = new Date()
-        return JSON.stringify({
-            context,
-            intent,
-            timestamp,
-            channelId
-        })
-    }
-
-    private signedContext(context: Context): Context {
-        context[SIGNATURE_KEY] = this.sign(this.contentToSign(context))
-        return context
+    wrapChannel(c: Channel): Channel {
+        return new SigningChannelDelegate(c, this.sign, this.check)
     }
 
     broadcast(context: Context): Promise<void> {
-        return super.broadcast(this.signedContext(context))
+        return signedContext(this.sign, context).then(sc => super.broadcast(sc))
     }
 
-    raiseIntent(a1: any, a2: any, a3: any): Promise<IntentResolution> {
+    raiseIntent(intentName: string, context: Context, a3: any): Promise<IntentResolution> {
+        return signedContext(this.sign, context, intentName).then(sc => super.raiseIntent(intentName, sc, a3))
+    }
 
+    raiseIntentForContext(context: Context, a2?: any): Promise<IntentResolution> {
+        return signedContext(this.sign, context).then(sc => super.raiseIntentForContext(sc, a2))
+    }
+
+    addContextListener(context: any, handler?: any): Promise<Listener> {
+        const theHandler: ContextHandler = handler ? handler : (context as ContextHandler)
+        const theContextType: string | null = context && handler ? (context as string) : null
+        return super.addContextListener(theContextType, wrapContextHandler(this.check, theHandler))
     }
 }

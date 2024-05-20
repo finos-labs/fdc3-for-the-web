@@ -1,8 +1,8 @@
-import { Check, MessageSignature, Sign, SigningMiddleware } from "../../../src/SigningMiddleware";
+import { Check, Sign, MessageSignature, MessageAuthenticity } from "../../../src/signing/SigningSupport";
 
 
 
-const dummySign: Sign = async (msg: string) => {
+export const dummySign: Sign = async (msg: string) => {
     const out = {
         digest: "length: " + msg.length,
         publicKeyUrl: "https://dummy.com/pubKey",
@@ -11,20 +11,12 @@ const dummySign: Sign = async (msg: string) => {
     return out;
 }
 
-const dummyCheck: Check = async (p: MessageSignature, msg: string) => {
+export const dummyCheck: Check = async (p: MessageSignature, msg: string) => {
     const out = {
         valid: p.digest == ("length: " + msg.length),
         verified: true,
         publicKeyUrl: p.publicKeyUrl,
-    }
+    } as MessageAuthenticity
 
     return out
-}
-
-export function createDummySigningMiddleware(): SigningMiddleware {
-
-    return new SigningMiddleware(dummySign, dummyCheck)
-
-
-
 }

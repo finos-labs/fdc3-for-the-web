@@ -1,20 +1,6 @@
+import { MessageAuthenticity, MessageSignature } from "./signing/SigningDesktopAgent"
 
-export type Sign = (msg: string) => Promise<MessageSignature>
-export type Check = (p: MessageSignature, msg: string) => Promise<MessageAuthenticity>
-export type Encrypt = (msg: string) => Promise<string>
-export type Decrypt = (msg: string) => Promise<string>
 
-export type MessageSignature = {
-    digest: string,
-    publicKeyUrl: string,
-    algorithm: any
-}
-
-export type MessageAuthenticity = {
-    verified: boolean,
-    valid: boolean,
-    publicKeyUrl: string
-}
 
 const TYPES_TO_SIGN = [
     'broadcastRequest',

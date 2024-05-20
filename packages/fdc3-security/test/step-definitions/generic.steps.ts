@@ -1,60 +1,47 @@
-import { TestMessaging } from '../support/TestMessaging';
-import { createDefaultChannels } from '../support/DefaultUserChannels';
 import { DataTable, Given, Then, When } from '@cucumber/cucumber'
 import { expect } from 'expect';
 import { doesRowMatch, handleResolve, matchData } from '../support/matching';
 import { CustomWorld } from '../world/index';
-import { BasicDesktopAgent, DefaultAppSupport, DefaultChannelSupport, DefaultIntentSupport, DefaultHandshakeSupport } from 'da-proxy';
-import { IntentResolver, SingleAppIntent } from 'fdc3-common';
-import { AppIntent, IntentResult } from '@finos/fdc3';
-import { createDummySigningMiddleware } from '../support/crypto/DummyCrypto';
+import { SigningDesktopAgent } from '../../src/signing/SigningDesktopAgent';
+import { dummyCheck, dummySign } from '../support/crypto/DummyCrypto';
+import { DesktopAgentSpy } from '../support/DesktopAgentSpy';
 
 export const CHANNEL_STATE = 'CHANNEL_STATE'
 
-class SimpleIntentResolver implements IntentResolver {
+// class SimpleIntentResolver implements IntentResolver {
 
-    cw: CustomWorld
+//     cw: CustomWorld
 
-    constructor(cw: CustomWorld) {
-        this.cw = cw;
-    }
+//     constructor(cw: CustomWorld) {
+//         this.cw = cw;
+//     }
 
-    async intentChosen(ir: IntentResult): Promise<IntentResult> {
-        this.cw.props['intent-result'] = ir
-        return ir
-    }
+//     async intentChosen(ir: IntentResult): Promise<IntentResult> {
+//         this.cw.props['intent-result'] = ir
+//         return ir
+//     }
 
-    async chooseIntent(appIntents: AppIntent[]): Promise<SingleAppIntent> {
-        const out = {
-            intent: appIntents[0].intent,
-            chosenApp: appIntents[0].apps[0]
-        }
+//     async chooseIntent(appIntents: AppIntent[]): Promise<SingleAppIntent> {
+//         const out = {
+//             intent: appIntents[0].intent,
+//             chosenApp: appIntents[0].apps[0]
+//         }
 
-        this.cw.props['intent-resolution'] = out
-        return out
-    }
-}
+//         this.cw.props['intent-resolution'] = out
+//         return out
+//     }
+// }
 
-Given('A Desktop Agent in {string} with Dummy Signing Middleware', async function (this: CustomWorld, field: string) {
+Given('A Signing Desktop Agent in {string} wrapping {string} with Dummy Signing Middleware', async function (this: CustomWorld, field: string, daField: string) {
+    const da = this.props[daField]
+    const signingDA = new SigningDesktopAgent(da, dummySign, dummyCheck)
 
-    if (!this.messaging) {
-        this.messaging = new TestMessaging(
-            [createDummySigningMiddleware()],
-            this.props[CHANNEL_STATE]);
-    }
+    this.props[field] = signingDA
+    this.props['result'] = null
+})
 
-    const version = "2.0"
-    const cs = new DefaultChannelSupport(this.messaging, createDefaultChannels(this.messaging), null)
-    const hs = new DefaultHandshakeSupport(this.messaging, [version], cs)
-    const is = new DefaultIntentSupport(this.messaging, new SimpleIntentResolver(this))
-    const as = new DefaultAppSupport(this.messaging, {
-        appId: "Test App Id",
-        desktopAgent: "Test DA",
-        instanceId: "123-ABC"
-    }, 'cucumber-desktop-agent')
-
-    const da = new BasicDesktopAgent(hs, cs, is, as, version)
-    await da.connect()
+Given('A Mock Desktop Agent in {string}', async function (this: CustomWorld, field: string) {
+    const da = new DesktopAgentSpy()
 
     this.props[field] = da
     this.props['result'] = null

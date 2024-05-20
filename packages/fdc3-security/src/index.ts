@@ -1,8 +1,8 @@
-import { SigningMiddleware, Sign, Check, Encrypt, Decrypt, MessageSignature, MessageAuthenticity } from './SigningMiddleware'
+import { Sign, Check, Encrypt, Decrypt, MessageSignature, MessageAuthenticity } from './signing/SigningSupport'
 import { Resolver, ClientSideImplementation, SIGNING_ALGORITHM_DETAILS } from './ClientSideImplementation'
+import { SigningDesktopAgent } from './signing/SigningDesktopAgent'
 
 export {
-    SigningMiddleware,
     type Check,
     type Sign,
     type Encrypt,
@@ -11,5 +11,6 @@ export {
     type MessageSignature,
     type Resolver,
     ClientSideImplementation,
+    SigningDesktopAgent,
     SIGNING_ALGORITHM_DETAILS
 }

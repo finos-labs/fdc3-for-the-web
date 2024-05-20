@@ -1,4 +1,4 @@
-import { Check, MessageAuthenticity, MessageSignature, Sign } from "./SigningMiddleware"
+import { Check, MessageAuthenticity, MessageSignature, Sign } from "./signing/SigningSupport";
 
 
 export const SIGNING_ALGORITHM_DETAILS = {

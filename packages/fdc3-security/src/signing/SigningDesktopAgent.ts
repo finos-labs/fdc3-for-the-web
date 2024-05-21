@@ -41,7 +41,7 @@ export class SigningDesktopAgent extends AbstractDesktopAgentDelegate {
     }
 
     addIntentListener(intent: string, handler: IntentHandler): Promise<Listener> {
-        return super.addIntentListener(intent, wrapIntentHandler(this.check, handler, intent))
+        return super.addIntentListener(intent, wrapIntentHandler(this.sign, this.check, handler, intent))
     }
 
 }

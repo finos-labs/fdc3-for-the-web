@@ -1,4 +1,4 @@
-import { Channel, Context, ContextHandler, ContextMetadata, IntentHandler } from "@finos/fdc3"
+import { Channel, Context, ContextHandler, ContextMetadata, IntentHandler, IntentResult } from "@finos/fdc3"
 
 export type Sign = (msg: string, date: Date) => Promise<MessageSignature>
 export type Check = (p: MessageSignature, msg: string) => Promise<MessageAuthenticity>
@@ -19,9 +19,11 @@ export type MessageSignature = {
 }
 
 export type MessageAuthenticity = {
-    verified: boolean,
+    verified: true,
     valid: boolean,
     publicKeyUrl: string
+} | {
+    verified: false
 }
 
 export type ContextMetadataWithAuthenticity = ContextMetadata & {
@@ -71,26 +73,57 @@ export function wrapContextHandler(check: Check, handler: ContextHandler, channe
     return out as ContextHandler
 }
 
-export function wrapIntentHandler(check: Check, handler: IntentHandler, intentName: string): IntentHandler {
-    const out = (c: Context, m: ContextMetadataWithAuthenticity) => {
+async function wrapIntentResult(ir: IntentResult, sign: Sign, intentName: string): Promise<IntentResult> {
+    if (ir == undefined) {
+        return
+    } else if (ir.type) {
+        // it's a context
+        return signedContext(sign, ir as Context, intentName, undefined)
+    } else {
+        // it's a private channel
+        return ir
+    }
+}
 
-        if (c[SIGNATURE_KEY]) {
-            // context is signed, so check it.
+export function wrapIntentHandler(sign: Sign, check: Check, handler: IntentHandler, intentName: string): IntentHandler {
+
+    const out = (c: Context, m: ContextMetadataWithAuthenticity | undefined) => {
+
+        async function checkSignature(): Promise<{ context: Context, meta: ContextMetadataWithAuthenticity }> {
             const signature = c[SIGNATURE_KEY] as MessageSignature
-            delete c[SIGNATURE_KEY]
-
-            contentToSign(c, signature.date, intentName)
-                .then(messageToCheck => check(signature, messageToCheck))
-                .then(r => {
-                    const m2: ContextMetadataWithAuthenticity = (m == undefined) ? {} as ContextMetadataWithAuthenticity : m
-                    m2[AUTHENTICITY_KEY] = r
-                    handler(c, m2)
-                })
-        } else {
-            delete m[AUTHENTICITY_KEY]
-            return handler(c, m)
+            if (signature) {
+                delete c[SIGNATURE_KEY]
+                const toSign = await contentToSign(c, signature.date, intentName)
+                const auth = await check(signature, toSign)
+                return {
+                    context: c,
+                    meta: {
+                        ...m as any,
+                        authenticity: auth
+                    }
+                }
+            } else {
+                return {
+                    context: c,
+                    meta: {
+                        ...m as any,
+                        authenticity: {
+                            verified: false
+                        }
+                    }
+                }
+            }
         }
+
+        async function applyHandler(context: Context, meta: ContextMetadata): Promise<IntentResult> {
+            const result = await handler(context, meta)
+            const wrapped = await wrapIntentResult(result, sign, intentName)
+            return wrapped
+        }
+
+        return checkSignature().then(({ context, meta }) => applyHandler(context, meta))
+
     }
 
-    return out as IntentHandler
+    return out
 }

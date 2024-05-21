@@ -4,6 +4,7 @@ Feature: Signing Broadcasts
     Given A Mock Desktop Agent in "mock"
     Given A Signing Desktop Agent in "api" wrapping "mock" with Dummy Signing Middleware
     Given "instrumentContext" is a "fdc3.instrument" context
+    Given "instrumentContextIH" is a "fdc3.instrument" context
 
   Scenario: App Channel Broadcasts context data will include a signature
 We are using "Dummy Crypto" here, which basically just adds a digest containing the length.
@@ -38,3 +39,11 @@ In reality, we wouldn't use this, but it makes the test a lot simpler to underst
     Then "{api.delegate.tracking}" is an array of objects with the following contents
       | method      | args[0]    | args[1].type    | args[1].id.ticker | args[1].__signature.publicKeyUrl | args[1].__signature.digest |
       | raiseIntent | robsIntent | fdc3.instrument | AAPL              | https://dummy.com/pubKey         | length: 141                |
+
+  Scenario: Intent Handler returning a context object has the response signed
+    Given "resultHandler" echoes the context back to the raiser
+    And I call "api" with "addIntentListener" with parameters "viewNews" and "{resultHandler}"
+    And I call "{api.delegate.handlers.viewNews}" with parameter "{instrumentContextIH}"
+    Then "{result}" is an object with the following contents
+      | type            | id.ticker | __signature.publicKeyUrl | __signature.digest |
+      | fdc3.instrument | AAPL      | https://dummy.com/pubKey | length: 139        |

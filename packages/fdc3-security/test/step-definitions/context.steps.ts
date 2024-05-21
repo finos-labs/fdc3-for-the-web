@@ -51,3 +51,9 @@ Given('{string} pipes context to {string} and metadata to {string}', function (t
     this.props[field2].push(metadata)
   }
 })
+
+Given('{string} echoes the context back to the raiser', function (this: CustomWorld, contextHandlerName: string) {
+  this.props[contextHandlerName] = async (context: Context, _metadata: ContextMetadata) => {
+    return context
+  }
+});

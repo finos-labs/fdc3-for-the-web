@@ -2,14 +2,19 @@ import { Channel, Context, ContextHandler, ContextMetadata, IntentHandler, Inten
 
 export type Sign = (msg: string, date: Date) => Promise<MessageSignature>
 export type Check = (p: MessageSignature, msg: string) => Promise<MessageAuthenticity>
-export type Encrypt = (msg: string) => Promise<string>
-export type Decrypt = (msg: string) => Promise<string>
 
 /**
  * This is the field that is added to the context object to contain the signature
  */
 export const SIGNATURE_KEY = "__signature"
 export const AUTHENTICITY_KEY = "authenticity"
+
+export const SIGNING_ALGORITHM_DETAILS = {
+    name: "ECDSA",
+    hash: "SHA-512",
+    namedCurve: 'P-521'
+} as EcdsaParams
+
 
 export type MessageSignature = {
     digest: string,

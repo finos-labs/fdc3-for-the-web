@@ -1,9 +1,11 @@
 import { Given } from "@cucumber/cucumber";
 import { CustomWorld } from "../world";
-import { ClientSideImplementation, SIGNING_ALGORITHM_DETAILS } from "../../src/ClientSideImplementation";
 import { handleResolve } from "../support/matching";
+import { ClientSideImplementation } from "../../src/ClientSideImplementation";
+import { ENCRYPTION_ALGORITHM } from "../../src/encyryption/EncryptionSupport";
+import { SIGNING_ALGORITHM_DETAILS } from "../../src/signing/SigningSupport";
 
-Given('A New Keypair loaded into {string} and {string}', async function (this: CustomWorld, pub: string, priv: string) {
+Given('A New Signing Keypair loaded into {string} and {string}', async function (this: CustomWorld, pub: string, priv: string) {
     const params: EcKeyGenParams = {
         ...SIGNING_ALGORITHM_DETAILS,
         namedCurve: 'P-521'
@@ -12,6 +14,30 @@ Given('A New Keypair loaded into {string} and {string}', async function (this: C
     const kp = await crypto.subtle.generateKey(params, true, ["sign", "verify"]) as CryptoKeyPair
     this.props[pub] = kp.publicKey
     this.props[priv] = kp.privateKey
+});
+
+
+Given('A New Encryption Keypair loaded into {string} and {string}', async function (this: CustomWorld, pub: string, priv: string) {
+    const params: RsaHashedKeyGenParams = {
+        name: "RSA-OAEP",
+        modulusLength: 4096,
+        publicExponent: new Uint8Array([1, 0, 1]),
+        hash: "SHA-256",
+    }
+
+    const kp = await crypto.subtle.generateKey(params, true, ["encrypt", "decrypt", "wrapKey", "unwrapKey"]) as CryptoKeyPair
+    this.props[pub] = kp.publicKey
+    this.props[priv] = kp.privateKey
+});
+
+Given('A Symmetric key loaded into {string}', async function (this: CustomWorld, pub: string) {
+    const params: AesKeyGenParams = {
+        name: ENCRYPTION_ALGORITHM,
+        length: 256
+    }
+
+    const k = await crypto.subtle.generateKey(params, true, ["encrypt", "decrypt"]) as CryptoKey
+    this.props[pub] = k
 });
 
 Given('A Client Side Implementation in {string}', function (this: CustomWorld, field: string) {

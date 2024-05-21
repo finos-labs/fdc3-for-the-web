@@ -14,12 +14,12 @@ Feature: Cyptographics
     And I refer to "result" as "signer"
     And I call "api" with "initChecker" with parameter "{urlResolver}"
     And I refer to "result" as "checker"
-    And I call "signer" with parameters "This is a test message" and "{date}"
+    And I call "{signer}" with parameters "This is a test message" and "{date}"
     Then "{result}" is an object with the following contents
       | algorithm.name | algorithm.hash | publicKeyUrl            |
       | ECDSA          | SHA-512        | https://blah.com/pubKey |
     And I refer to "result" as "signature"
-    And I call "checker" with parameters "{signature}" and "This is a test message"
+    And I call "{checker}" with parameters "{signature}" and "This is a test message"
     Then "{result}" is an object with the following contents
       | verified | valid | publicKeyUrl            |
       | true     | true  | https://blah.com/pubKey |
@@ -29,19 +29,21 @@ Feature: Cyptographics
     And I refer to "result" as "encrypter"
     And I call "api" with "initDecrypt" with parameter "{symkey}"
     And I refer to "result" as "decrypter"
-    And I call "{encrypter}" with parameter "{instrumentContext}"
+    And I call "{encrypter}" with parameters "{instrumentContext}" and "{symkey}"
     Then "{result}" is an object with the following contents
       | __encrypted.algorithm.name | type            |
       | AES-GCM                    | fdc3.instrument |
     And I refer to "result" as "encryptedContext"
-    And I call "{decrypter}" with parameter "{encryptedContext}"
+    And I call "{decrypter}" with parameters "{encryptedContext}" and "{symkey}"
     Then "{result}" is an object with the following contents
       | type            | name  | id.ticker |
       | fdc3.instrument | Apple | AAPL      |
 
   Scenario: Use a public/private key pair to wrap/unwrap a symmetric key
-    Given I call "api" with "wrapKey" with parameters "{symkey}" and "{epubKey}"
+    Given I call "api" with "initWrapKey"
+    And I refer to "result" as "wrapper"
+    And I call "{wrapper}" with parameters "{symkey}", "{epubKey}" and "hometown"
     Then "{result}" is an object with the following contents
-      | algorithm.name |
-      | RSA-OAEP       |
+      | algorithm.name | type                       | id.publicKeyUrl |
+      | RSA-OAEP       | fdc3.security.symmetricKey | hometown        |
     And I call "api" with "unwrapKey" with parameters "{result}" and "{eprivKey}"

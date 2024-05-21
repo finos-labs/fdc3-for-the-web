@@ -1,4 +1,5 @@
 import { Channel, Context, ContextHandler, ContextMetadata, IntentHandler, IntentResult } from "@finos/fdc3"
+import { SecuredDesktopAgent } from "../SecuredDesktopAgent"
 
 export type Sign = (msg: string, date: Date) => Promise<MessageSignature>
 export type Check = (p: MessageSignature, msg: string) => Promise<MessageAuthenticity>
@@ -53,7 +54,7 @@ export async function signedContext(sign: Sign, context: Context, intent?: strin
     })
 }
 
-export function wrapContextHandler(check: Check, handler: ContextHandler, channelProvider: () => Promise<Channel | null>): ContextHandler {
+export function signingContextHandler(check: Check, handler: ContextHandler, channelProvider: () => Promise<Channel | null>): ContextHandler {
     const out = (c: Context, m: ContextMetadataWithAuthenticity) => {
 
         if (c[SIGNATURE_KEY]) {
@@ -78,19 +79,19 @@ export function wrapContextHandler(check: Check, handler: ContextHandler, channe
     return out as ContextHandler
 }
 
-async function wrapIntentResult(ir: IntentResult, sign: Sign, intentName: string): Promise<IntentResult> {
+async function wrapIntentResult(ir: IntentResult, da: SecuredDesktopAgent, intentName: string): Promise<IntentResult> {
     if (ir == undefined) {
         return
-    } else if (ir.type) {
-        // it's a context
-        return signedContext(sign, ir as Context, intentName, undefined)
+    } else if ((ir.type == 'app') || (ir.type == 'user') || (ir.type == 'private')) {
+        // usual way to wrap channels
+        return da.wrapChannel(ir as Channel)
     } else {
-        // it's a private channel
-        return ir
+        // it's a context
+        return signedContext(da.sign, ir as Context, intentName, undefined)
     }
 }
 
-export function wrapIntentHandler(sign: Sign, check: Check, handler: IntentHandler, intentName: string): IntentHandler {
+export function signingIntentHandler(da: SecuredDesktopAgent, handler: IntentHandler, intentName: string): IntentHandler {
 
     const out = (c: Context, m: ContextMetadataWithAuthenticity | undefined) => {
 
@@ -99,7 +100,7 @@ export function wrapIntentHandler(sign: Sign, check: Check, handler: IntentHandl
             if (signature) {
                 delete c[SIGNATURE_KEY]
                 const toSign = await contentToSign(c, signature.date, intentName)
-                const auth = await check(signature, toSign)
+                const auth = await da.check(signature, toSign)
                 return {
                     context: c,
                     meta: {
@@ -122,7 +123,7 @@ export function wrapIntentHandler(sign: Sign, check: Check, handler: IntentHandl
 
         async function applyHandler(context: Context, meta: ContextMetadata): Promise<IntentResult> {
             const result = await handler(context, meta)
-            const wrapped = await wrapIntentResult(result, sign, intentName)
+            const wrapped = await wrapIntentResult(result, da, intentName)
             return wrapped
         }
 

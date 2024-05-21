@@ -1,4 +1,4 @@
-Feature: Signing Broadcasts
+Feature: Checking Signatures
 
   Background: Desktop Agent API
     Given A Mock Desktop Agent in "mock"
@@ -51,7 +51,7 @@ Feature: Signing Broadcasts
     When I call "api" with "createPrivateChannel"
     And I refer to "result" as "privateChannel"
     And I call "privateChannel" with "addContextListener" with parameters "{null}" and "{resultHandler}"
-    And I call "{privateChannel.delegate.handlers.any}" with parameter "{instrumentContextPC}"
+    And I call "{privateChannel.delegate.delegate.handlers.any}" with parameter "{instrumentContextPC}"
     Then "{contexts}" is an array of objects with the following contents
       | type            | name  |
       | fdc3.instrument | Apple |

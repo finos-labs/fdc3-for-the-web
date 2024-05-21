@@ -2,7 +2,7 @@ import { Given } from "@cucumber/cucumber";
 import { CustomWorld } from "../world";
 import { handleResolve } from "../support/matching";
 import { ClientSideImplementation } from "../../src/ClientSideImplementation";
-import { ENCRYPTION_ALGORITHM } from "../../src/encyryption/EncryptionSupport";
+import { createSymmetricKey } from "../../src/encryption/EncryptionSupport";
 import { SIGNING_ALGORITHM_DETAILS } from "../../src/signing/SigningSupport";
 
 Given('A New Signing Keypair loaded into {string} and {string}', async function (this: CustomWorld, pub: string, priv: string) {
@@ -31,12 +31,7 @@ Given('A New Encryption Keypair loaded into {string} and {string}', async functi
 });
 
 Given('A Symmetric key loaded into {string}', async function (this: CustomWorld, pub: string) {
-    const params: AesKeyGenParams = {
-        name: ENCRYPTION_ALGORITHM,
-        length: 256
-    }
-
-    const k = await crypto.subtle.generateKey(params, true, ["encrypt", "decrypt"]) as CryptoKey
+    const k = await createSymmetricKey()
     this.props[pub] = k
 });
 

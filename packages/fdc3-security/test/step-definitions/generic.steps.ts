@@ -2,8 +2,8 @@ import { DataTable, Given, Then, When } from '@cucumber/cucumber'
 import { expect } from 'expect';
 import { doesRowMatch, handleResolve, matchData } from '../support/matching';
 import { CustomWorld } from '../world/index';
-import { SigningDesktopAgent } from '../../src/signing/SigningDesktopAgent';
-import { dummyCheck, dummySign } from '../support/crypto/DummyCrypto';
+import { SecuredDesktopAgent } from '../../src/SecuredDesktopAgent';
+import { dummyCheck, dummySign, dummyUnwrapKey, dummyWrapKey } from '../support/crypto/DummyCrypto';
 import { DesktopAgentSpy } from '../support/DesktopAgentSpy';
 
 export const CHANNEL_STATE = 'CHANNEL_STATE'
@@ -34,7 +34,7 @@ export const CHANNEL_STATE = 'CHANNEL_STATE'
 
 Given('A Signing Desktop Agent in {string} wrapping {string} with Dummy Signing Middleware', async function (this: CustomWorld, field: string, daField: string) {
     const da = this.props[daField]
-    const signingDA = new SigningDesktopAgent(da, dummySign, dummyCheck)
+    const signingDA = new SecuredDesktopAgent(da, dummySign, dummyCheck, dummyWrapKey, dummyUnwrapKey)
 
     this.props[field] = signingDA
     this.props['result'] = null
@@ -80,8 +80,19 @@ When('I call {string} with parameter {string}', async function (this: CustomWorl
 
 When('I call {string} with parameters {string} and {string}', async function (this: CustomWorld, fnName: string, param1: string, param2: string) {
     try {
-        const fn = this.props[fnName];
+        const fn = handleResolve(fnName, this);
         const result = await fn(handleResolve(param1, this), handleResolve(param2, this))
+        this.props['result'] = result;
+    } catch (error) {
+        this.log(JSON.stringify(error))
+        this.props['result'] = error
+    }
+})
+
+When('I call {string} with parameters {string}, {string} and {string}', async function (this: CustomWorld, fnName: string, param1: string, param2: string, param3: string) {
+    try {
+        const fn = handleResolve(fnName, this);
+        const result = await fn(handleResolve(param1, this), handleResolve(param2, this), handleResolve(param3, this))
         this.props['result'] = result;
     } catch (error) {
         this.log(JSON.stringify(error))

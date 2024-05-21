@@ -1,7 +1,7 @@
 import { Channel, Context, DisplayMetadata, Listener, PrivateChannel } from "@finos/fdc3";
 
 /**
- * Wraps a standard FDC3 Channel or PrivateChannel
+ * Wraps a standard FDC3 Channel or PrivateChannel.
  */
 export class ChannelDelegate implements PrivateChannel {
 

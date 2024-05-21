@@ -1,6 +1,6 @@
-import { Context } from "vm";
-import { Decrypt, ENCRYPTION_ALGORITHM, Encrypt, EncryptedContent, EncryptedContext } from "./encyryption/EncryptionSupport";
+import { Decrypt, ENCRYPTION_ALGORITHM, Encrypt, UnwrapKey, WrapKey, decrypt, encrypt } from "./encryption/EncryptionSupport";
 import { Check, MessageAuthenticity, MessageSignature, Sign, SIGNING_ALGORITHM_DETAILS } from "./signing/SigningSupport";
+import { SymmetricKeyContext } from "./encryption/SymmetricKeyContext";
 
 /**
  * When given the URL of a public key to load, this function 
@@ -9,7 +9,7 @@ import { Check, MessageAuthenticity, MessageSignature, Sign, SIGNING_ALGORITHM_D
  */
 export type Resolver = (url: string) => Promise<JsonWebKey>
 
-function base64ToArrayBuffer(base64: string) {
+export function base64ToArrayBuffer(base64: string) {
     var binaryString = atob(base64);
     var bytes = new Uint8Array(binaryString.length);
     for (var i = 0; i < binaryString.length; i++) {
@@ -34,49 +34,43 @@ export class ClientSideImplementation {
         }
     }
 
-    initEncrypt(key: CryptoKey): Encrypt {
-        return async (c: Context) => {
-            const msg = JSON.stringify(c)
-            const iv = crypto.getRandomValues(new Uint8Array(12));
-            const details = { name: ENCRYPTION_ALGORITHM, iv }
-            const buffer = await crypto.subtle.encrypt(details, key, new TextEncoder().encode(msg))
+    initWrapKey(): WrapKey {
+        return async (toWrap: CryptoKey, wrapWith: CryptoKey, publicKeyUrl: string) => {
+            const params: RsaOaepParams = {
+                name: "RSA-OAEP"
+            }
+            const buffer = await crypto.subtle.wrapKey("jwk", toWrap, wrapWith, params)
             const encrypted = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-
             return {
-                type: c.type,
-                __encrypted: {
-                    algorithm: details,
-                    encrypted
-                }
+                type: "fdc3.security.symmetricKey",
+                id: {
+                    publicKeyUrl
+                },
+                algorithm: params,
+                wrappedKey: encrypted
             }
         }
     }
 
-    initDecrypt(key: CryptoKey): Decrypt {
-        return async (e: EncryptedContext) => {
-            const encrypted = e.__encrypted
-            const details = { name: ENCRYPTION_ALGORITHM, iv: encrypted.algorithm.iv }
-            const buffer = await crypto.subtle.decrypt(details, key, base64ToArrayBuffer(encrypted.encrypted))
-            const decrypted = new TextDecoder().decode(buffer)
-            return JSON.parse(decrypted)
-        }
+    initEncrypt(): Encrypt {
+        return encrypt
+
     }
 
-    async wrapKey(toWrap: CryptoKey, wrapWith: CryptoKey): Promise<EncryptedContent> {
-        const params: RsaOaepParams = {
-            name: "RSA-OAEP"
-        }
-        const buffer = await crypto.subtle.wrapKey("jwk", toWrap, wrapWith, params)
-        const encrypted = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-        return {
-            algorithm: params,
-            encrypted
-        }
+    initDecrypt(): Decrypt {
+        return decrypt
     }
 
-    async unwrapKey(c: EncryptedContent, unwrapWith: CryptoKey): Promise<CryptoKey> {
-        const key = await crypto.subtle.unwrapKey("jwk", base64ToArrayBuffer(c.encrypted), unwrapWith, "RSA-OAEP", ENCRYPTION_ALGORITHM, true, ["encrypt", "decrypt"])
-        return key
+    initUnwrapKey(unwrapWith: CryptoKey, publicKeyUrl: string): UnwrapKey {
+        return async (c: SymmetricKeyContext) => {
+            if (c.id.publicKeyUrl == publicKeyUrl) {
+                const encrypted = c.wrappedKey
+                const key = await crypto.subtle.unwrapKey("jwk", base64ToArrayBuffer(encrypted), unwrapWith, "RSA-OAEP", ENCRYPTION_ALGORITHM, true, ["encrypt", "decrypt"])
+                return key
+            } else {
+                return null;
+            }
+        }
     }
 
     validateAlgorithm(algorithm: any) {

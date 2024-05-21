@@ -1,7 +1,7 @@
 Feature: Private Channel Encryption
 
   Background:
-    Given A New Keypair loaded into "public" and "private"
+    Given A New Encryption Keypair loaded into "public" and "private"
     Given A Client Side Implementation in "csi"
     Given A Local URL Resolver in "urlResolver" resolving "https://blah.com/pubKey" to "{public}"
     Given 
@@ -9,6 +9,13 @@ Feature: Private Channel Encryption
   Scenario: A message arrives raising an intent which results in a private channel.
 The request is signed, which means the requester has SigningMiddleware enabled.  
 In this case, we return the private channel with a symmetric encryption key wrapped in the signer's public key.
+
+    Given "resultHandler" returns new private channels
+    And I call "api" with "addIntentListener" with parameters "viewNews" and "{resultHandler}"
+    And I call "{api.delegate.handlers.viewNews}" with parameter "{instrumentContextIH}"
+    Then "{result}" is an object with the following contents
+      | type            | id.ticker | __signature.publicKeyUrl | __signature.digest |
+      | fdc3.instrument | AAPL      | https://dummy.com/pubKey | length: 139        |
 
   Scenario: We are resolving a second intent to the existing private channel.
 Therefore, we need to reuse the existing encryption key.

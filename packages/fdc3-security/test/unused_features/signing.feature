@@ -1,4 +1,4 @@
-Feature: Signing Broadcasts
+Feature: Signing Contexts
 
   Background: Desktop Agent API
     Given A Mock Desktop Agent in "mock"
@@ -30,7 +30,7 @@ In reality, we wouldn't use this, but it makes the test a lot simpler to underst
     When I call "api" with "createPrivateChannel"
     And I refer to "result" as "privateChannel"
     And I call "privateChannel" with "broadcast" with parameter "{instrumentContext}"
-    Then "{privateChannel.delegate.tracking}" is an array of objects with the following contents
+    Then "{privateChannel.delegate.delegate.tracking}" is an array of objects with the following contents
       | method    | args[0].type    | args[0].id.ticker | args[0].__signature.publicKeyUrl | args[0].__signature.digest |
       | broadcast | fdc3.instrument | AAPL              | https://dummy.com/pubKey         | length: 119                |
 

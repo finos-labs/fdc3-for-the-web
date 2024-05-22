@@ -1,4 +1,5 @@
-import { AppIdentifier, AppIntent, AppMetadata, Channel, Context, DesktopAgent, ImplementationMetadata, IntentHandler, IntentResolution, Listener, PrivateChannel } from "@finos/fdc3";
+import { AppIdentifier, AppIntent, AppMetadata, Channel, Context, DesktopAgent, ImplementationMetadata, IntentHandler, IntentResolution, IntentResult, Listener, PrivateChannel } from "@finos/fdc3";
+import { IntentResolutionDelegate } from "./IntentResolutionDelegate";
 
 /**
  * This class implements a simple delegate, forwarding all 
@@ -13,6 +14,13 @@ export abstract class AbstractDesktopAgentDelegate implements DesktopAgent {
     }
 
     abstract wrapChannel(c: Channel): Channel
+
+    wrapIntentResolution(ir: IntentResolution): IntentResolution {
+        return new IntentResolutionDelegate(this, ir)
+
+    }
+
+    abstract wrapIntentResult(r: IntentResult): IntentResult
 
     addContextListener(context: any, handler?: any): Promise<Listener> {
         return this.delegate.addContextListener(context as any, handler)
@@ -39,11 +47,11 @@ export abstract class AbstractDesktopAgentDelegate implements DesktopAgent {
     }
 
     raiseIntent(intent: string, context: Context, a3?: any): Promise<IntentResolution> {
-        return this.delegate.raiseIntent(intent, context, a3)
+        return this.delegate.raiseIntent(intent, context, a3).then(ir => this.wrapIntentResolution(ir))
     }
 
     raiseIntentForContext(context: Context, a2?: any): Promise<IntentResolution> {
-        return this.delegate.raiseIntentForContext(context, a2)
+        return this.delegate.raiseIntentForContext(context, a2).then(ir => this.wrapIntentResolution(ir))
     }
 
     addIntentListener(intent: string, handler: IntentHandler): Promise<Listener> {

@@ -20,24 +20,27 @@ async function setupKeys(j: JsonWebKey[]): Promise<DesktopAgent> {
 fetch('/sp1-private-key')
     .then(r => r.json())
     .then(j => setupKeys(j))
-    .then(fdc3 => {
+    .then(c => {
 
         const csi = new ClientSideImplementation()
 
-        return new SecuredDesktopAgent(fdc3,
+        return new SecuredDesktopAgent(c,
             csi.initSigner(signingPrivateKey as CryptoKey, "/sp1-public-key"),
             csi.initChecker(resolver),
             csi.initWrapKey(resolver),
             csi.initUnwrapKey(unwrappingPrivateKey as CryptoKey, "/sp1-public-key"))
 
-    }).then(async fdc3 => {
+    }).then(async efdc3 => {
         console.log("in promise")
 
-        fdc3.addIntentListener("SecretComms", async (context) => {
-            const pc = await fdc3.createPrivateChannel()
-            const msg = document.createElement("p");
-            msg.textContent = "Created private channel!: " + JSON.stringify(pc);
+        efdc3.addIntentListener("SecretComms", async (context, metadata) => {
             const log = document.getElementById("log");
+            const msg1 = document.createElement("pre");
+            msg1.textContent = `Received: ${JSON.stringify(context)} and meta ${JSON.stringify(metadata)}`
+            log?.appendChild(msg1)
+            const msg = document.createElement("pre");
+            const pc = await efdc3.createPrivateChannel()
+            msg.textContent = "Created private channel!: " + JSON.stringify(pc);
             log?.appendChild(msg);
 
             var broadcastCount = 0;

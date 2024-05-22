@@ -1,9 +1,10 @@
-import { DesktopAgent, Context, IntentResolution, Listener, ContextHandler, Channel, IntentHandler, PrivateChannel } from "@finos/fdc3";
+import { DesktopAgent, Context, IntentResolution, Listener, ContextHandler, Channel, IntentHandler, PrivateChannel, IntentResult } from "@finos/fdc3";
 import { AbstractDesktopAgentDelegate } from "./delegates/AbstractDesktopAgentDelegate";
 import { SigningChannelDelegate } from "./signing/SigningChannelDelegate";
 import { Check, Sign, signedContext, signingContextHandler, signingIntentHandler } from "./signing/SigningSupport";
 import { EncryptingPrivateChannel, UnwrapKey, WrapKey } from "./encryption/EncryptionSupport";
 import { EncryptingChannelDelegate } from "./encryption/EncryptingChannelDelegate";
+import { wrap } from "module";
 
 /**
  * This implementation adds signing functionality to any broadcast context
@@ -40,6 +41,18 @@ export class SecuredDesktopAgent extends AbstractDesktopAgentDelegate {
             throw new Error("Unknown Channel Type")
         }
     }
+
+    wrapIntentResult(r: IntentResult): IntentResult {
+        if (r == undefined) {
+            return undefined
+        } else if ((r.type == 'user') || (r.type == 'private') || (r.type == 'app')) {
+            return this.wrapChannel(r as Channel)
+        } else {
+            // just return context as-is
+            return r
+        }
+    }
+
 
     broadcast(context: Context): Promise<void> {
         return signedContext(this.sign, context).then(sc => super.broadcast(sc))

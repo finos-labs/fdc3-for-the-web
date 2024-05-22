@@ -3,14 +3,14 @@ import { getClientAPI } from '@kite9/client'
 import { SecuredDesktopAgent, Resolver, SIGNING_ALGORITHM_DETAILS, ClientSideImplementation, WRAPPING_ALGORITHM_KEY_PARAMS } from '@kite9/fdc3-security'
 
 
-
+let signingPrivateKey: CryptoKey | null = null
+let unwrappingPrivateKey: CryptoKey | null = null
+let privateChannel: PrivateChannel | null = null
 /**
  * Gets the private channel via a raise Intent then spools the output
  */
 function doIt() {
 
-    let signingPrivateKey: CryptoKey | null = null
-    let unwrappingPrivateKey: CryptoKey | null = null
 
     const resolver: Resolver = (u: string) => {
         return fetch(u)
@@ -26,20 +26,20 @@ function doIt() {
     fetch('/sp2-private-key')
         .then(r => r.json())
         .then(j => setupKeys(j))
-        .then(fdc3 => {
+        .then(c => {
             const csi = new ClientSideImplementation()
 
-            return new SecuredDesktopAgent(fdc3,
+            return new SecuredDesktopAgent(c,
                 csi.initSigner(signingPrivateKey as CryptoKey, "/sp1-public-key"),
                 csi.initChecker(resolver),
                 csi.initWrapKey(resolver),
                 csi.initUnwrapKey(unwrappingPrivateKey as CryptoKey, "/sp1-public-key"))
 
-        }).then(async fdc3 => {
+        }).then(async sfdc3 => {
             console.log("in promise")
             console.log("in promise")
             const log = document.getElementById("log");
-            const reso = await fdc3.raiseIntent("SecretComms", {
+            const reso = await sfdc3.raiseIntent("SecretComms", {
                 type: "fdc3.instrument",
                 id: {
                     isin: "Abc123"
@@ -50,7 +50,7 @@ function doIt() {
             const result = await reso.getResult()
             log!!.textContent += `Got result: ${JSON.stringify(result)}`
 
-            const privateChannel = result as PrivateChannel
+            privateChannel = result as PrivateChannel
             privateChannel.addContextListener(null, (ctx, meta) => {
                 log!!.textContent += `Private Channel Message ctx=${JSON.stringify(ctx)} meta=${JSON.stringify(meta)} \n`;
             })

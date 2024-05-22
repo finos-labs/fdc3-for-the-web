@@ -25,7 +25,10 @@ export class SecuredDesktopAgent extends AbstractDesktopAgentDelegate {
     }
 
     wrapChannel(c: Channel): Channel {
-        if ((c.type == 'app') || (c.type == 'user')) {
+        if ((c as any).delegate) {
+            // channel already wrapped 
+            return c
+        } else if ((c.type == 'app') || (c.type == 'user')) {
             return new SigningChannelDelegate(c, this.sign, this.check)
         } else if (c.type == 'private') {
             // private channels both sign and encrypt

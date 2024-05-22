@@ -3,29 +3,18 @@ import { CustomWorld } from "../world";
 import { handleResolve } from "../support/matching";
 import { ClientSideImplementation } from "../../src/ClientSideImplementation";
 import { createSymmetricKey } from "../../src/encryption/EncryptionSupport";
-import { SIGNING_ALGORITHM_DETAILS } from "../../src/signing/SigningSupport";
+import { ContextMetadata, IntentHandler, IntentResult } from "@finos/fdc3";
+import { Context } from "vm";
 
 Given('A New Signing Keypair loaded into {string} and {string}', async function (this: CustomWorld, pub: string, priv: string) {
-    const params: EcKeyGenParams = {
-        ...SIGNING_ALGORITHM_DETAILS,
-        namedCurve: 'P-521'
-    }
-
-    const kp = await crypto.subtle.generateKey(params, true, ["sign", "verify"]) as CryptoKeyPair
+    const kp = await new ClientSideImplementation().createSigningKeys()
     this.props[pub] = kp.publicKey
     this.props[priv] = kp.privateKey
 });
 
 
 Given('A New Encryption Keypair loaded into {string} and {string}', async function (this: CustomWorld, pub: string, priv: string) {
-    const params: RsaHashedKeyGenParams = {
-        name: "RSA-OAEP",
-        modulusLength: 4096,
-        publicExponent: new Uint8Array([1, 0, 1]),
-        hash: "SHA-256",
-    }
-
-    const kp = await crypto.subtle.generateKey(params, true, ["encrypt", "decrypt", "wrapKey", "unwrapKey"]) as CryptoKeyPair
+    const kp = await new ClientSideImplementation().createWrappingKeys()
     this.props[pub] = kp.publicKey
     this.props[priv] = kp.privateKey
 });
@@ -43,12 +32,16 @@ Given('A timestamp in {string}', function (this: CustomWorld, field: string) {
     this.props[field] = new Date()
 })
 
-Given('A Local URL Resolver in {string} resolving {string} to {string}', function (this: CustomWorld, field: string, url: string, field2: string) {
-    const out = (x: string) => {
+Given('A Local URL Resolver in {string} resolving {string} to {string} and {string}', async function (this: CustomWorld, field: string, url: string, field2: string, field3: string) {
+    const out = async (x: string) => {
         if (x == url) {
-            const key: CryptoKey = handleResolve(field2, this)
-            const jwk = crypto.subtle.exportKey("jwk", key)
-            return new Promise(resolve => resolve(jwk))
+            const key1: CryptoKey = handleResolve(field2, this)
+            const jwk1 = await crypto.subtle.exportKey("jwk", key1)
+
+            const key2: CryptoKey = handleResolve(field3, this)
+            const jwk2 = await crypto.subtle.exportKey("jwk", key2)
+
+            return [jwk1, jwk2]
         } else {
             throw new Error(`Can't resolve ${x}`)
         }
@@ -57,3 +50,10 @@ Given('A Local URL Resolver in {string} resolving {string} to {string}', functio
     this.props[field] = out
 });
 
+Given('{string} is an intent handler which returns {string}', function (this: CustomWorld, field: string, resultField: string) {
+    const result = handleResolve(resultField, this) as IntentResult
+    const out: IntentHandler = async (_ctx: Context, _meta: ContextMetadata | undefined) => {
+        return result
+    }
+    this.props[field] = out
+});

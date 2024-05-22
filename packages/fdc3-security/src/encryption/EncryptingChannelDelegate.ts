@@ -23,6 +23,9 @@ export class EncryptingChannelDelegate extends ChannelDelegate implements Encryp
             }
         })
     }
+    isEncrypting(): boolean {
+        return this.encrypting
+    }
 
     async setChannelEncryption(state: boolean): Promise<void> {
         if (state && !this.symmetricKey) {
@@ -31,9 +34,9 @@ export class EncryptingChannelDelegate extends ChannelDelegate implements Encryp
         this.encrypting = state
     }
 
-    async broadcastKey(key: CryptoKey, publicKeyUrl: string): Promise<void> {
+    async broadcastKey(publicKeyUrl: string): Promise<void> {
         if (this.symmetricKey) {
-            const ctx = await this.wrapKey(this.symmetricKey, key, publicKeyUrl)
+            const ctx = await this.wrapKey(this.symmetricKey, publicKeyUrl)
             return super.broadcast(ctx)
         } else {
             throw new Error("Channel not set to encrypting")

@@ -5,6 +5,7 @@ import { CustomWorld } from '../world/index';
 import { SecuredDesktopAgent } from '../../src/SecuredDesktopAgent';
 import { dummyCheck, dummySign, dummyUnwrapKey, dummyWrapKey } from '../support/crypto/DummyCrypto';
 import { DesktopAgentSpy } from '../support/DesktopAgentSpy';
+import { ClientSideImplementation, Resolver } from '../../src/ClientSideImplementation';
 
 export const CHANNEL_STATE = 'CHANNEL_STATE'
 
@@ -35,6 +36,23 @@ export const CHANNEL_STATE = 'CHANNEL_STATE'
 Given('A Signing Desktop Agent in {string} wrapping {string} with Dummy Signing Middleware', async function (this: CustomWorld, field: string, daField: string) {
     const da = this.props[daField]
     const signingDA = new SecuredDesktopAgent(da, dummySign, dummyCheck, dummyWrapKey, dummyUnwrapKey)
+
+    this.props[field] = signingDA
+    this.props['result'] = null
+})
+
+Given('A Signing Desktop Agent in {string} wrapping {string} with Real Middleware using {string}, {string}, {string} and resolver {string}', async function (this: CustomWorld, field: string, daField: string, spriv: string, epriv: string, publicUrl: string, resolver: string) {
+    const da = this.props[daField]
+    const csi = new ClientSideImplementation()
+    const sprivKey: CryptoKey = handleResolve(spriv, this)
+    const eprivKey: CryptoKey = handleResolve(epriv, this)
+    const resolverObj: Resolver = handleResolve(resolver, this)
+
+    const signingDA = new SecuredDesktopAgent(da,
+        csi.initSigner(sprivKey, publicUrl),
+        csi.initChecker(resolverObj),
+        csi.initWrapKey(resolverObj),
+        csi.initUnwrapKey(eprivKey, publicUrl))
 
     this.props[field] = signingDA
     this.props['result'] = null

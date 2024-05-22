@@ -26,7 +26,7 @@ export const dummyCheck: Check = async (p: MessageSignature, msg: string) => {
     return out
 }
 
-export const dummyWrapKey: WrapKey = async (toWrap: CryptoKey, _wrapWith: CryptoKey, publicKeyUrl: string) => {
+export const dummyWrapKey: WrapKey = async (toWrap: CryptoKey, publicKeyUrl: string) => {
     return {
         type: "fdc3.security.symmetricKey",
         id: {

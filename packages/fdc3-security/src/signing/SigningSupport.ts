@@ -1,5 +1,6 @@
 import { Channel, Context, ContextHandler, ContextMetadata, IntentHandler, IntentResult } from "@finos/fdc3"
 import { SecuredDesktopAgent } from "../SecuredDesktopAgent"
+import { handlePrivateChannelKeyShare } from "../encryption/EncryptionSupport"
 
 export type Sign = (msg: string, date: Date) => Promise<MessageSignature>
 export type Check = (p: MessageSignature, msg: string) => Promise<MessageAuthenticity>
@@ -16,6 +17,10 @@ export const SIGNING_ALGORITHM_DETAILS = {
     namedCurve: 'P-521'
 } as EcdsaParams
 
+export const SIGNING_ALGORITHM_KEY_PARAMS: EcKeyGenParams = {
+    ...SIGNING_ALGORITHM_DETAILS,
+    namedCurve: 'P-521'
+}
 
 export type MessageSignature = {
     digest: string,
@@ -79,12 +84,15 @@ export function signingContextHandler(check: Check, handler: ContextHandler, cha
     return out as ContextHandler
 }
 
-async function wrapIntentResult(ir: IntentResult, da: SecuredDesktopAgent, intentName: string): Promise<IntentResult> {
+
+async function wrapIntentResult(ir: IntentResult, da: SecuredDesktopAgent, intentName: string, meta: ContextMetadataWithAuthenticity): Promise<IntentResult> {
     if (ir == undefined) {
         return
     } else if ((ir.type == 'app') || (ir.type == 'user') || (ir.type == 'private')) {
         // usual way to wrap channels
-        return da.wrapChannel(ir as Channel)
+        const out = da.wrapChannel(ir as Channel)
+        handlePrivateChannelKeyShare(out, meta)
+        return out
     } else {
         // it's a context
         return signedContext(da.sign, ir as Context, intentName, undefined)
@@ -123,7 +131,7 @@ export function signingIntentHandler(da: SecuredDesktopAgent, handler: IntentHan
 
         async function applyHandler(context: Context, meta: ContextMetadata): Promise<IntentResult> {
             const result = await handler(context, meta)
-            const wrapped = await wrapIntentResult(result, da, intentName)
+            const wrapped = await wrapIntentResult(result, da, intentName, meta)
             return wrapped
         }
 

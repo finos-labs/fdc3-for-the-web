@@ -1,18 +1,23 @@
 Feature: Private Channel Encryption
 
   Background:
-    Given A New Encryption Keypair loaded into "public" and "private"
-    Given A Client Side Implementation in "csi"
-    Given A Local URL Resolver in "urlResolver" resolving "https://blah.com/pubKey" to "{public}"
-    Given 
+    Given A Mock Desktop Agent in "mock"
+    Given A New Encryption Keypair loaded into "epub" and "epriv"
+    Given A New Signing Keypair loaded into "spub" and "spriv"
+    Given A Local URL Resolver in "urlResolver" resolving "https://blah.com/pubKey" to "{epub}" and "{spub}"
+    Given A Signing Desktop Agent in "api" wrapping "mock" with Real Middleware using "{spriv}", "{epriv}", "https://blah.com/pubKey" and resolver "{urlResolver}"
 
-  Scenario: A message arrives raising an intent which results in a private channel.
+  Scenario: A message arrives raising an intent which results in an encrypted private channel.
 The request is signed, which means the requester has SigningMiddleware enabled.  
 In this case, we return the private channel with a symmetric encryption key wrapped in the signer's public key.
 
-    Given "resultHandler" returns new private channels
+    Given I call "api" with "createPrivateChannel"
+    And I refer to "result" as "privateChannel"
+    And I call "privateChannel" with "setChannelEncryption" with parameter "true"
+    And "signedContext" is a "fdc3.instrument" context signwed with "{spriv}" and "https://blah.com/pubKey" for intent "viewNews"
+    Given "resultHandler" is an intent handler which returns "{privateChannel}"
     And I call "api" with "addIntentListener" with parameters "viewNews" and "{resultHandler}"
-    And I call "{api.delegate.handlers.viewNews}" with parameter "{instrumentContextIH}"
+    And I call "{api.delegate.handlers.viewNews}" with parameter "{signedContext}"
     Then "{result}" is an object with the following contents
       | type            | id.ticker | __signature.publicKeyUrl | __signature.digest |
       | fdc3.instrument | AAPL      | https://dummy.com/pubKey | length: 139        |

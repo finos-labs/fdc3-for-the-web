@@ -1,7 +1,9 @@
 import { Given } from '@cucumber/cucumber'
 import { CustomWorld } from '../world/index';
 import { Context, ContextMetadata } from '@finos/fdc3';
-import { SIGNATURE_KEY } from '../../src/signing/SigningSupport';
+import { SIGNATURE_KEY, signedContext } from '../../src/signing/SigningSupport';
+import { ClientSideImplementation } from '../../src/ClientSideImplementation';
+import { handleResolve } from '../support/matching';
 
 const contextMap: Record<string, any> = {
   "fdc3.instrument": {
@@ -42,6 +44,16 @@ Given('{string} is a {string} context with dummy signature field length {int}', 
   this.props[field] = copy
 })
 
+Given('{string} is a {string} context signwed with {string} and {string} for intent {string}', async function (this: CustomWorld, field: string, type: string, privateSigningKey: string, publicKeyUrl: string, intent: string) {
+  const privateKey = handleResolve(privateSigningKey, this)
+  const sign = new ClientSideImplementation().initSigner(privateKey, publicKeyUrl)
+
+
+  const copy = JSON.parse(JSON.stringify(contextMap[type]));
+  const signedCopy = await signedContext(sign, copy, intent, undefined)
+
+  this.props[field] = signedCopy
+})
 
 Given('{string} pipes context to {string} and metadata to {string}', function (this: CustomWorld, contextHandlerName: string, field: string, field2: string) {
   this.props[field] = []

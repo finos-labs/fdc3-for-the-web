@@ -1,11 +1,12 @@
-import { ContextMetadata, Context, PrivateChannel } from "@finos/fdc3"
+import { ContextMetadata, Context, PrivateChannel, Channel } from "@finos/fdc3"
 import { SymmetricKeyContext } from "./SymmetricKeyContext"
 import { base64ToArrayBuffer } from "../ClientSideImplementation"
+import { ContextMetadataWithAuthenticity } from "../signing/SigningSupport"
 
 export type Encrypt = (msg: Context, symmetricKey: CryptoKey) => Promise<EncryptedContext>
 export type Decrypt = (msg: EncryptedContext, symmetricKey: CryptoKey) => Promise<Context>
 
-export type WrapKey = (toWrap: CryptoKey, wrapWith: CryptoKey, publicKeyUrl: string) => Promise<SymmetricKeyContext>
+export type WrapKey = (toWrap: CryptoKey, publicKeyUrl: string) => Promise<SymmetricKeyContext>
 export type UnwrapKey = (key: SymmetricKeyContext) => Promise<CryptoKey | null>
 
 /**
@@ -22,7 +23,7 @@ export type EncryptedContent = {
     algorithm: any
 }
 
-export const ENCRYPTION_ALGORITHM = "AES-GCM"
+export const SYMMETRIC_ENCRYPTION_ALGORITHM = "AES-GCM"
 
 export type EncryptedContext = {
     type: string,
@@ -39,14 +40,14 @@ export async function createSymmetricKey() {
 }
 
 export const SYMMETRIC_KEY_PARAMS: AesKeyGenParams = {
-    name: ENCRYPTION_ALGORITHM,
+    name: SYMMETRIC_ENCRYPTION_ALGORITHM,
     length: 256
 }
 
 export const encrypt: Encrypt = async (c: Context, key: CryptoKey) => {
     const msg = JSON.stringify(c)
     const iv = crypto.getRandomValues(new Uint8Array(12));
-    const details = { name: ENCRYPTION_ALGORITHM, iv }
+    const details = { name: SYMMETRIC_ENCRYPTION_ALGORITHM, iv }
     const buffer = await crypto.subtle.encrypt(details, key, new TextEncoder().encode(msg))
     const encoded = btoa(String.fromCharCode(...new Uint8Array(buffer)));
 
@@ -61,13 +62,18 @@ export const encrypt: Encrypt = async (c: Context, key: CryptoKey) => {
 
 export const decrypt: Decrypt = async (e: EncryptedContext, key: CryptoKey) => {
     const encrypted = e.__encrypted
-    const details = { name: ENCRYPTION_ALGORITHM, iv: encrypted.algorithm.iv }
+    const details = { name: SYMMETRIC_ENCRYPTION_ALGORITHM, iv: encrypted.algorithm.iv }
     const buffer = await crypto.subtle.decrypt(details, key, base64ToArrayBuffer(encrypted.encoded))
     const decrypted = new TextDecoder().decode(buffer)
     return JSON.parse(decrypted)
 }
 
 export interface EncryptingPrivateChannel extends PrivateChannel {
+
+    /**
+     * Returns true if this channel is set to encrypt with setChannelEncryption(true)
+     */
+    isEncrypting(): boolean
 
     /**
      * Call this method after creation to ensure that further communications on 
@@ -79,6 +85,36 @@ export interface EncryptingPrivateChannel extends PrivateChannel {
      * Broadcasts the channel's symmetric key, wrapped in the provided public key of 
      * a receiving app.
      */
-    broadcastKey(key: CryptoKey, publicKeyUrl: string): Promise<void>
+    broadcastKey(publicKeyUrl: string): Promise<void>
 
 }
+
+
+export function handlePrivateChannelKeyShare(c: Channel, meta: ContextMetadataWithAuthenticity) {
+    if (c.type == 'private') {
+        const pc = c as EncryptingPrivateChannel
+
+        if (pc.isEncrypting()) {
+            if (meta.authenticity?.verified) {
+                const publicKey = meta.authenticity.publicKeyUrl
+                pc.broadcastKey(publicKey)
+            } else {
+                throw new Error("Client Doesn't Support Encrypted Channels")
+            }
+        }
+    }
+}
+
+export const WRAPPING_ALGORITHM = "RSA-OAEP"
+
+export const WRAPPING_ALGORITHM_KEY_PARAMS: RsaHashedKeyGenParams = {
+    name: WRAPPING_ALGORITHM,
+    modulusLength: 4096,
+    publicExponent: new Uint8Array([1, 0, 1]),
+    hash: "SHA-256",
+}
+
+export const WRAPPING_ALGORITHM_DETAILS: RsaOaepParams = {
+    name: WRAPPING_ALGORITHM
+}
+

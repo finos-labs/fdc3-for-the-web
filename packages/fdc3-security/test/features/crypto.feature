@@ -5,7 +5,7 @@ Feature: Cyptographics
     Given A New Encryption Keypair loaded into "epubKey" and "eprivKey"
     Given A Symmetric key loaded into "symkey"
     Given A Client Side Implementation in "api"
-    Given A Local URL Resolver in "urlResolver" resolving "https://blah.com/pubKey" to "{public}"
+    Given A Local URL Resolver in "urlResolver" resolving "https://blah.com/pubKey" to "{public}" and "{epubKey}"
     Given A timestamp in "date"
     Given "instrumentContext" is a "fdc3.instrument" context
 
@@ -40,10 +40,10 @@ Feature: Cyptographics
       | fdc3.instrument | Apple | AAPL      |
 
   Scenario: Use a public/private key pair to wrap/unwrap a symmetric key
-    Given I call "api" with "initWrapKey"
+    Given I call "api" with "initWrapKey" with parameter "{urlResolver}"
     And I refer to "result" as "wrapper"
-    And I call "{wrapper}" with parameters "{symkey}", "{epubKey}" and "hometown"
+    And I call "{wrapper}" with parameters "{symkey}" and "https://blah.com/pubKey"
     Then "{result}" is an object with the following contents
-      | algorithm.name | type                       | id.publicKeyUrl |
-      | RSA-OAEP       | fdc3.security.symmetricKey | hometown        |
+      | algorithm.name | type                       | id.publicKeyUrl         |
+      | RSA-OAEP       | fdc3.security.symmetricKey | https://blah.com/pubKey |
     And I call "api" with "unwrapKey" with parameters "{result}" and "{eprivKey}"

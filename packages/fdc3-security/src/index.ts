@@ -1,7 +1,7 @@
 import { Sign, Check, MessageSignature, MessageAuthenticity, SIGNING_ALGORITHM_DETAILS } from './signing/SigningSupport'
 import { Resolver, ClientSideImplementation } from './ClientSideImplementation'
 import { SecuredDesktopAgent } from './SecuredDesktopAgent'
-import { Encrypt, Decrypt, EncryptedContext, EncryptedContent } from './encryption/EncryptionSupport'
+import { Encrypt, Decrypt, EncryptedContext, EncryptedContent, WRAPPING_ALGORITHM_KEY_PARAMS } from './encryption/EncryptionSupport'
 
 export {
     type Check,
@@ -15,5 +15,6 @@ export {
     type Resolver,
     ClientSideImplementation,
     SecuredDesktopAgent,
-    SIGNING_ALGORITHM_DETAILS
+    SIGNING_ALGORITHM_DETAILS,
+    WRAPPING_ALGORITHM_KEY_PARAMS
 }

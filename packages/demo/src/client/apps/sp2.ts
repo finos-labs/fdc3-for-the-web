@@ -1,6 +1,6 @@
-import { PrivateChannel } from '@finos/fdc3';
+import { DesktopAgent, PrivateChannel } from '@finos/fdc3';
 import { getClientAPI } from '@kite9/client'
-import { SigningDesktopAgent, Resolver, SIGNING_ALGORITHM_DETAILS, ClientSideImplementation } from '@kite9/fdc3-security'
+import { SecuredDesktopAgent, Resolver, SIGNING_ALGORITHM_DETAILS, ClientSideImplementation, WRAPPING_ALGORITHM_KEY_PARAMS } from '@kite9/fdc3-security'
 
 
 
@@ -9,28 +9,31 @@ import { SigningDesktopAgent, Resolver, SIGNING_ALGORITHM_DETAILS, ClientSideImp
  */
 function doIt() {
 
-    let pk: CryptoKey | null = null
+    let signingPrivateKey: CryptoKey | null = null
+    let unwrappingPrivateKey: CryptoKey | null = null
 
     const resolver: Resolver = (u: string) => {
         return fetch(u)
             .then(r => r.json())
     }
 
+    async function setupKeys(j: JsonWebKey[]): Promise<DesktopAgent> {
+        signingPrivateKey = await crypto.subtle.importKey("jwk", j[0], SIGNING_ALGORITHM_DETAILS, true, ["sign"])
+        unwrappingPrivateKey = await crypto.subtle.importKey("jwk", j[1], WRAPPING_ALGORITHM_KEY_PARAMS, true, ["unwrapKey"])
+        return getClientAPI()
+    }
+
     fetch('/sp2-private-key')
         .then(r => r.json())
-        .then(j => {
-            return crypto.subtle.importKey("jwk", j, SIGNING_ALGORITHM_DETAILS, true, ["sign"])
-        }).then(privateKey => {
-            pk = privateKey
-
-            return getClientAPI()
-        }).then(fdc3 => {
-
+        .then(j => setupKeys(j))
+        .then(fdc3 => {
             const csi = new ClientSideImplementation()
 
-            return new SigningDesktopAgent(fdc3,
-                csi.initSigner(pk as CryptoKey, "/sp1-public-key"),
-                csi.initChecker(resolver))
+            return new SecuredDesktopAgent(fdc3,
+                csi.initSigner(signingPrivateKey as CryptoKey, "/sp1-public-key"),
+                csi.initChecker(resolver),
+                csi.initWrapKey(resolver),
+                csi.initUnwrapKey(unwrappingPrivateKey as CryptoKey, "/sp1-public-key"))
 
         }).then(async fdc3 => {
             console.log("in promise")

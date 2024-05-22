@@ -26,7 +26,7 @@ In this case, we return the private channel with a symmetric encryption key wrap
       | method    | args[0].type               | args[0].id.publicKeyUrl | args[0].algorithm.name | args[0].__signature.algorithm.name |
       | broadcast | fdc3.security.symmetricKey | https://blah.com/pubKey | RSA-OAEP               | ECDSA                              |
 
-  Scenario: We are resolving a second intent to the existing private channel.
+  Scenario: Messages sent over the private channel are encry
 Therefore, we need to reuse the existing encryption key.
 
   Scenario: An intent result is received containing a private channel.

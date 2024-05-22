@@ -19,8 +19,12 @@ In this case, we return the private channel with a symmetric encryption key wrap
     And I call "api" with "addIntentListener" with parameters "viewNews" and "{resultHandler}"
     And I call "{api.delegate.handlers.viewNews}" with parameter "{signedContext}"
     Then "{result}" is an object with the following contents
-      | type            | id.ticker | __signature.publicKeyUrl | __signature.digest |
-      | fdc3.instrument | AAPL      | https://dummy.com/pubKey | length: 139        |
+      | type    | id      | encrypting |
+      | private | priv123 | true       |
+    And we wait for the context to be sent
+    Then "{privateChannel.delegate.delegate.tracking}" is an array of objects with the following contents
+      | method    | args[0].type               | args[0].id.publicKeyUrl | args[0].algorithm.name | args[0].__signature.algorithm.name |
+      | broadcast | fdc3.security.symmetricKey | https://blah.com/pubKey | RSA-OAEP               | ECDSA                              |
 
   Scenario: We are resolving a second intent to the existing private channel.
 Therefore, we need to reuse the existing encryption key.

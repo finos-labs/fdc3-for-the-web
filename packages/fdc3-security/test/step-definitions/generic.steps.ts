@@ -186,3 +186,9 @@ Given('{string} is a invocation counter into {string}', function (this: CustomWo
     }
     this.props[field] = 0;
 })
+
+When('we wait for the context to be sent', function (this: CustomWorld) {
+    return new Promise<void>((resolve, _reject) => {
+        setTimeout(() => resolve(), 200)
+    })
+});

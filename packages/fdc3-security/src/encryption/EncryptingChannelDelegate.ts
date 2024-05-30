@@ -37,7 +37,8 @@ export class EncryptingChannelDelegate extends ChannelDelegate implements Encryp
     async broadcastKey(publicKeyUrl: string): Promise<void> {
         if (this.symmetricKey) {
             const ctx = await this.wrapKey(this.symmetricKey, publicKeyUrl)
-            return super.broadcast(ctx)
+            setTimeout(() => super.broadcast(ctx), 1000)
+            return
         } else {
             throw new Error("Channel not set to encrypting")
         }

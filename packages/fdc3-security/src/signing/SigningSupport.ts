@@ -1,6 +1,8 @@
 import { Channel, Context, ContextHandler, ContextMetadata, IntentHandler, IntentResult } from "@finos/fdc3"
 import { SecuredDesktopAgent } from "../SecuredDesktopAgent"
 import { handlePrivateChannelKeyShare } from "../encryption/EncryptionSupport"
+import { canonicalize } from 'json-canonicalize';
+
 
 export type Sign = (msg: string, date: Date) => Promise<MessageSignature>
 export type Check = (p: MessageSignature, msg: string) => Promise<MessageAuthenticity>
@@ -42,7 +44,7 @@ export type ContextMetadataWithAuthenticity = ContextMetadata & {
 }
 
 export async function contentToSign(context: Context, timestamp: string, intent?: string, channelId?: string): Promise<string> {
-    return JSON.stringify({
+    return canonicalize({
         context,
         intent,
         timestamp,

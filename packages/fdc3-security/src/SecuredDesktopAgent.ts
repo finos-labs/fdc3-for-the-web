@@ -4,7 +4,6 @@ import { SigningChannelDelegate } from "./signing/SigningChannelDelegate";
 import { Check, Sign, signedContext, signingContextHandler, signingIntentHandler } from "./signing/SigningSupport";
 import { EncryptingPrivateChannel, UnwrapKey, WrapKey } from "./encryption/EncryptionSupport";
 import { EncryptingChannelDelegate } from "./encryption/EncryptingChannelDelegate";
-import { wrap } from "module";
 
 /**
  * This implementation adds signing functionality to any broadcast context

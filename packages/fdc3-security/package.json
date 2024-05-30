@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@finos/fdc3": "^2.1.0-beta.6",
+    "json-canonicalize": "^1.0.6",
     "tsx": "^4.7.1"
   },
   "devDependencies": {

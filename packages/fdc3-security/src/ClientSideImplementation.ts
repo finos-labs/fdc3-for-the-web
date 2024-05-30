@@ -1,6 +1,6 @@
 import { Decrypt, SYMMETRIC_ENCRYPTION_ALGORITHM, Encrypt, UnwrapKey, WRAPPING_ALGORITHM_KEY_PARAMS, WrapKey, decrypt, encrypt, WRAPPING_ALGORITHM_DETAILS } from "./encryption/EncryptionSupport";
 import { Check, MessageAuthenticity, MessageSignature, Sign, SIGNING_ALGORITHM_DETAILS, SIGNING_ALGORITHM_KEY_PARAMS } from "./signing/SigningSupport";
-import { SymmetricKeyContext } from "./encryption/SymmetricKeyContext";
+import { SYMMETRIC_KEY_RESPONSE_CONTEXT, SymmetricKeyResponseContext } from "./encryption/SymmetricKeyContext";
 
 /**
  * When given the URL of a public key to load, this function 
@@ -22,6 +22,8 @@ export class ClientSideImplementation {
 
     initSigner(privateKey: CryptoKey, publicKeyUrl: string): Sign {
         return async (msg: string, date: Date) => {
+            console.log("SIGNING " + msg)
+
             const buffer = await crypto.subtle.sign(SIGNING_ALGORITHM_DETAILS, privateKey, new TextEncoder().encode(msg))
             const digest = btoa(String.fromCharCode(...new Uint8Array(buffer)));
 
@@ -33,6 +35,8 @@ export class ClientSideImplementation {
             } as MessageSignature
         }
     }
+
+
 
     async createWrappingKeys(): Promise<CryptoKeyPair> {
         const kp = await crypto.subtle.generateKey(WRAPPING_ALGORITHM_KEY_PARAMS, true, ["encrypt", "decrypt", "wrapKey", "unwrapKey"]) as CryptoKeyPair
@@ -56,13 +60,13 @@ export class ClientSideImplementation {
                 const buffer = await crypto.subtle.wrapKey("jwk", toWrap, wrapWith, WRAPPING_ALGORITHM_DETAILS)
                 const encrypted = btoa(String.fromCharCode(...new Uint8Array(buffer)));
                 return {
-                    type: "fdc3.security.symmetricKey",
+                    type: SYMMETRIC_KEY_RESPONSE_CONTEXT,
                     id: {
                         publicKeyUrl
                     },
                     algorithm: WRAPPING_ALGORITHM_DETAILS,
                     wrappedKey: encrypted
-                }
+                } as SymmetricKeyResponseContext
             }
         }
     }
@@ -77,7 +81,7 @@ export class ClientSideImplementation {
     }
 
     initUnwrapKey(unwrapWith: CryptoKey, publicKeyUrl: string): UnwrapKey {
-        return async (c: SymmetricKeyContext) => {
+        return async (c: SymmetricKeyResponseContext) => {
             if (c.id.publicKeyUrl == publicKeyUrl) {
                 const encrypted = c.wrappedKey
                 const key = await crypto.subtle.unwrapKey("jwk", base64ToArrayBuffer(encrypted), unwrapWith, "RSA-OAEP", SYMMETRIC_ENCRYPTION_ALGORITHM, true, ["encrypt", "decrypt"])
@@ -88,6 +92,8 @@ export class ClientSideImplementation {
         }
     }
 
+
+
     validateAlgorithm(algorithm: any) {
         if ((algorithm.name != SIGNING_ALGORITHM_DETAILS.name) || (algorithm.hash != SIGNING_ALGORITHM_DETAILS.hash)) {
             throw new Error("Unsupported Algorithm")
@@ -96,6 +102,7 @@ export class ClientSideImplementation {
 
     initChecker(resolver: Resolver, timeWindowMS: number = 2000): Check {
         return async (p: MessageSignature, msg: string): Promise<MessageAuthenticity> => {
+            console.log("CHECKING " + msg)
             this.validateAlgorithm(p.algorithm)
             const verifyKeys = (await resolver(p.publicKeyUrl)).filter(k => k.key_ops?.includes("verify"))
             let exceptions = []

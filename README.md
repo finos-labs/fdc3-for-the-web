@@ -101,6 +101,8 @@ The project is divided into several different yarn workspaces:
 - test intent resolvers on different domains
 - factor out test codes into module
 - handle setting connected on the server context.
+- canonicalisation of JSON messages (search: abc)
+- wrap intent result is in the wrong place.
 
 ## Idea
 

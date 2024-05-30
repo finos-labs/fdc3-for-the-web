@@ -24,6 +24,9 @@ const contextMap: Record<string, any> = {
   "fdc3.unsupported": {
     "type": "fdc3.unsupported",
     "bogus": true
+  },
+  "fdc3.security.symmetricKey.request": {
+    "type": "fdc3.security.symmetricKey.request"
   }
 }
 
@@ -44,7 +47,7 @@ Given('{string} is a {string} context with dummy signature field length {int}', 
   this.props[field] = copy
 })
 
-Given('{string} is a {string} context signwed with {string} and {string} for intent {string}', async function (this: CustomWorld, field: string, type: string, privateSigningKey: string, publicKeyUrl: string, intent: string) {
+Given('{string} is a {string} context signed with {string} and {string} for intent {string}', async function (this: CustomWorld, field: string, type: string, privateSigningKey: string, publicKeyUrl: string, intent: string) {
   const privateKey = handleResolve(privateSigningKey, this)
   const sign = new ClientSideImplementation().initSigner(privateKey, publicKeyUrl)
 

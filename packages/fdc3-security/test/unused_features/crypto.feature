@@ -44,6 +44,6 @@ Feature: Cyptographics
     And I refer to "result" as "wrapper"
     And I call "{wrapper}" with parameters "{symkey}" and "https://blah.com/pubKey"
     Then "{result}" is an object with the following contents
-      | algorithm.name | type                       | id.publicKeyUrl         |
-      | RSA-OAEP       | fdc3.security.symmetricKey | https://blah.com/pubKey |
+      | algorithm.name | type                                | id.publicKeyUrl         |
+      | RSA-OAEP       | fdc3.security.symmetricKey.response | https://blah.com/pubKey |
     And I call "api" with "unwrapKey" with parameters "{result}" and "{eprivKey}"

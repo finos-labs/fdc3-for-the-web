@@ -30,10 +30,10 @@ function doIt() {
             const csi = new ClientSideImplementation()
 
             return new SecuredDesktopAgent(c,
-                csi.initSigner(signingPrivateKey as CryptoKey, "/sp1-public-key"),
+                csi.initSigner(signingPrivateKey as CryptoKey, "/sp2-public-key"),
                 csi.initChecker(resolver),
                 csi.initWrapKey(resolver),
-                csi.initUnwrapKey(unwrappingPrivateKey as CryptoKey, "/sp1-public-key"))
+                csi.initUnwrapKey(unwrappingPrivateKey as CryptoKey, "/sp2-public-key"))
 
         }).then(async sfdc3 => {
             console.log("in promise")

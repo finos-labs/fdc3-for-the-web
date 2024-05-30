@@ -1,6 +1,7 @@
 import { Context, DesktopAgent } from '@finos/fdc3'
 import { getClientAPI } from '@kite9/client'
 import { SecuredDesktopAgent, Resolver, SIGNING_ALGORITHM_DETAILS, WRAPPING_ALGORITHM_KEY_PARAMS, ClientSideImplementation } from '@kite9/fdc3-security'
+import { ContextMetadataWithAuthenticity } from '@kite9/fdc3-security/src/signing/SigningSupport'
 
 
 let signingPrivateKey: CryptoKey | null = null
@@ -38,25 +39,47 @@ fetch('/sp1-private-key')
             const msg1 = document.createElement("pre");
             msg1.textContent = `Received: ${JSON.stringify(context)} and meta ${JSON.stringify(metadata)}`
             log?.appendChild(msg1)
-            const msg = document.createElement("pre");
-            const pc = await efdc3.createPrivateChannel()
-            msg.textContent = "Created private channel!: " + JSON.stringify(pc);
-            log?.appendChild(msg);
 
-            var broadcastCount = 0;
+            const authenticity = (metadata as ContextMetadataWithAuthenticity).authenticity
 
-            setInterval(() => {
-                broadcastCount++
-                const outContext = {
-                    type: 'demo.counter',
-                    id: {
-                        bc: broadcastCount
-                    },
-                    original: context
-                } as Context
-                pc.broadcast(outContext)
-            }, 1000);
+            if ((authenticity?.verified)
+                && (authenticity.valid)
+                && (authenticity.publicKeyUrl == '/sp2-public-key')) {
+                const msg = document.createElement("pre");
+                const pc = await efdc3.createPrivateChannel()
+                pc.setChannelEncryption(true)
+                msg.textContent = "Created private channel!: " + JSON.stringify(pc);
+                log?.appendChild(msg);
 
-            return pc
+                var broadcastCount = 0;
+
+                pc.addContextListener(null, (ctx, meta) => {
+                    const msg2 = document.createElement("pre");
+                    msg2.textContent = `Received ${JSON.stringify(ctx)} with meta ${JSON.stringify(meta)}`
+                    log?.appendChild(msg2)
+                })
+
+                setInterval(() => {
+                    broadcastCount++
+                    const outContext = {
+                        type: 'demo.counter',
+                        id: {
+                            bc: broadcastCount
+                        },
+                        original: context
+                    } as Context
+                    pc.broadcast(outContext)
+                }, 1000);
+
+                return pc
+            } else {
+                // signature check failed
+                const msg = document.createElement("pre");
+                msg.textContent = "Not from SP2!: " + JSON.stringify(metadata);
+                log?.appendChild(msg);
+                return undefined
+            }
         })
+
+
     });

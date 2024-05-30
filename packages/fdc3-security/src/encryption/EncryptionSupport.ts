@@ -1,13 +1,12 @@
-import { ContextMetadata, Context, PrivateChannel, Channel } from "@finos/fdc3"
-import { SymmetricKeyContext } from "./SymmetricKeyContext"
+import { ContextMetadata, Context, PrivateChannel } from "@finos/fdc3"
+import { SymmetricKeyResponseContext } from "./SymmetricKeyContext"
 import { base64ToArrayBuffer } from "../ClientSideImplementation"
-import { ContextMetadataWithAuthenticity } from "../signing/SigningSupport"
 
 export type Encrypt = (msg: Context, symmetricKey: CryptoKey) => Promise<EncryptedContext>
 export type Decrypt = (msg: EncryptedContext, symmetricKey: CryptoKey) => Promise<Context>
 
-export type WrapKey = (toWrap: CryptoKey, publicKeyUrl: string) => Promise<SymmetricKeyContext>
-export type UnwrapKey = (key: SymmetricKeyContext) => Promise<CryptoKey | null>
+export type WrapKey = (toWrap: CryptoKey, publicKeyUrl: string) => Promise<SymmetricKeyResponseContext>
+export type UnwrapKey = (key: SymmetricKeyResponseContext) => Promise<CryptoKey | null>
 
 /**
  * This is the field that is added to the context object to contain the encrypted content
@@ -46,6 +45,8 @@ export const SYMMETRIC_KEY_PARAMS: AesKeyGenParams = {
 
 export const encrypt: Encrypt = async (c: Context, key: CryptoKey) => {
     const msg = JSON.stringify(c)
+    console.log("ENCRYPTING " + msg)
+
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const details = { name: SYMMETRIC_ENCRYPTION_ALGORITHM, iv }
     const buffer = await crypto.subtle.encrypt(details, key, new TextEncoder().encode(msg))
@@ -62,6 +63,7 @@ export const encrypt: Encrypt = async (c: Context, key: CryptoKey) => {
 
 export const decrypt: Decrypt = async (e: EncryptedContext, key: CryptoKey) => {
     const encrypted = e.__encrypted
+    console.log("DECRYPTING " + encrypted)
     const details = { name: SYMMETRIC_ENCRYPTION_ALGORITHM, iv: encrypted.algorithm.iv }
     const buffer = await crypto.subtle.decrypt(details, key, base64ToArrayBuffer(encrypted.encoded))
     const decrypted = new TextDecoder().decode(buffer)
@@ -89,21 +91,6 @@ export interface EncryptingPrivateChannel extends PrivateChannel {
 
 }
 
-
-export function handlePrivateChannelKeyShare(c: Channel, meta: ContextMetadataWithAuthenticity) {
-    if (c.type == 'private') {
-        const pc = c as EncryptingPrivateChannel
-
-        if (pc.isEncrypting()) {
-            if (meta.authenticity?.verified) {
-                const publicKey = meta.authenticity.publicKeyUrl
-                pc.broadcastKey(publicKey)
-            } else {
-                throw new Error("Client Doesn't Support Encrypted Channels")
-            }
-        }
-    }
-}
 
 export const WRAPPING_ALGORITHM = "RSA-OAEP"
 

@@ -1336,6 +1336,7 @@ __metadata:
     eslint-plugin-prettier: "npm:3.3.1"
     expect: "npm:^29.7.0"
     is-ci: "npm:2.0.0"
+    json-canonicalize: "npm:^1.0.6"
     jsonpath-plus: "npm:^7.2.0"
     nyc: "npm:15.1.0"
     prettier: "npm:2.2.1"
@@ -6049,6 +6050,13 @@ __metadata:
   version: 3.0.1
   resolution: "json-buffer@npm:3.0.1"
   checksum: 10c0/0d1c91569d9588e7eef2b49b59851f297f3ab93c7b35c7c221e288099322be6b562767d11e4821da500f3219542b9afd2e54c5dc573107c1126ed1080f8e96d7
+  languageName: node
+  linkType: hard
+
+"json-canonicalize@npm:^1.0.6":
+  version: 1.0.6
+  resolution: "json-canonicalize@npm:1.0.6"
+  checksum: 10c0/4ed53911b911222c6ba125d530792aff99e830f48d0b26e36ae33abb513aa00ab7dded1e711ddcddd535177398f5bb151ffd81e3a906b39148fbd6453311a6fd
   languageName: node
   linkType: hard
 

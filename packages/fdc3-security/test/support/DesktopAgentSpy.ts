@@ -35,6 +35,7 @@ export class MockChannel implements PrivateChannel {
     readonly displayMetadata: DisplayMetadata
     public tracking: Call[] = []
     public handlers: { [type: string]: ContextHandler | IntentHandler } = {}
+    send: ((ctx: Context) => void) | null = null
 
     constructor(id: string, type: "user" | "app" | "private", displayMetadata: DisplayMetadata) {
         this.id = id;
@@ -64,6 +65,9 @@ export class MockChannel implements PrivateChannel {
 
     async broadcast(context: Context): Promise<void> {
         this.call("broadcast", context)
+        if (this.send) {
+            this.send(context)
+        }
     }
 
     async getCurrentContext(type?: string | undefined): Promise<Context | null> {
@@ -193,7 +197,7 @@ export class DesktopAgentSpy implements DesktopAgent {
         return new MockChannel(channelId, "app", {})
     }
 
-    async createPrivateChannel(): Promise<PrivateChannel> {
+    async createPrivateChannel(): Promise<MockChannel> {
         return new MockChannel("priv123", "private", {})
     }
 
@@ -221,4 +225,22 @@ export class DesktopAgentSpy implements DesktopAgent {
         return this.joinUserChannel(id)
     }
 
+    connectChannels(channel1: MockChannel, channel2: MockChannel) {
+
+        function deliver(channel: MockChannel, ctx: Context) {
+            const first = channel.handlers[ctx.type]
+            const second = channel.handlers["any"]
+
+            if (first) {
+                first(ctx)
+            }
+
+            if (second) {
+                second(ctx)
+            }
+        }
+
+        channel1.send = (ctx: Context) => deliver(channel2, ctx)
+        channel2.send = (ctx: Context) => deliver(channel1, ctx)
+    }
 }

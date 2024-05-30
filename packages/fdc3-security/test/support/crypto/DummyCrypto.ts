@@ -1,6 +1,6 @@
 import { Check, Sign, MessageSignature, MessageAuthenticity } from "../../../src/signing/SigningSupport";
 import { UnwrapKey, WrapKey } from "../../encryption/EncryptionSupport";
-import { SymmetricKeyContext } from "../../encryption/SymmetricKeyContext";
+import { SymmetricKeyResponseContext } from "../../encryption/SymmetricKeyContext";
 
 
 
@@ -28,16 +28,16 @@ export const dummyCheck: Check = async (p: MessageSignature, msg: string) => {
 
 export const dummyWrapKey: WrapKey = async (toWrap: CryptoKey, publicKeyUrl: string) => {
     return {
-        type: "fdc3.security.symmetricKey",
+        type: "fdc3.security.symmetricKey.response",
         id: {
             publicKeyUrl
         },
         algorithm: "DUMMY WRAPPING",
         wrappedKey: "[[[" + toWrap + "]]]"
-    } as SymmetricKeyContext
+    } as SymmetricKeyResponseContext
 }
 
-export const dummyUnwrapKey: UnwrapKey = async (_key: SymmetricKeyContext) => {
+export const dummyUnwrapKey: UnwrapKey = async (_key: SymmetricKeyResponseContext) => {
     // return a Crypto key here.
     return {
         algorithm: "DUMMY CRYPTO",

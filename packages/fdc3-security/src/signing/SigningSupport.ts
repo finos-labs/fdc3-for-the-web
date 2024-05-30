@@ -1,6 +1,5 @@
 import { Channel, Context, ContextHandler, ContextMetadata, IntentHandler, IntentResult } from "@finos/fdc3"
 import { SecuredDesktopAgent } from "../SecuredDesktopAgent"
-import { handlePrivateChannelKeyShare } from "../encryption/EncryptionSupport"
 import { canonicalize } from 'json-canonicalize';
 
 
@@ -43,7 +42,7 @@ export type ContextMetadataWithAuthenticity = ContextMetadata & {
     authenticity?: MessageAuthenticity
 }
 
-export async function contentToSign(context: Context, timestamp: string, intent?: string, channelId?: string): Promise<string> {
+export async function contentToSign(context: Context, timestamp: Date | string, intent?: string, channelId?: string): Promise<string> {
     return canonicalize({
         context,
         intent,
@@ -55,14 +54,14 @@ export async function contentToSign(context: Context, timestamp: string, intent?
 export async function signedContext(sign: Sign, context: Context, intent?: string, channelId?: string): Promise<Context> {
     delete context[SIGNATURE_KEY]
     const ts = new Date()
-    return sign(await contentToSign(context, JSON.stringify(ts), intent, channelId), ts).then(sig => {
+    return sign(await contentToSign(context, ts, intent, channelId), ts).then(sig => {
         context[SIGNATURE_KEY] = sig
         return context
     })
 }
 
 export function signingContextHandler(check: Check, handler: ContextHandler, channelProvider: () => Promise<Channel | null>): ContextHandler {
-    const out = (c: Context, m: ContextMetadataWithAuthenticity) => {
+    const out = (c: Context, m: ContextMetadataWithAuthenticity | undefined) => {
 
         if (c[SIGNATURE_KEY]) {
             // context is signed, so check it.
@@ -78,7 +77,9 @@ export function signingContextHandler(check: Check, handler: ContextHandler, cha
                     handler(c, m2)
                 })
         } else {
-            delete m[AUTHENTICITY_KEY]
+            if (m) {
+                delete m[AUTHENTICITY_KEY]
+            }
             return handler(c, m)
         }
     }
@@ -87,14 +88,12 @@ export function signingContextHandler(check: Check, handler: ContextHandler, cha
 }
 
 
-async function wrapIntentResult(ir: IntentResult, da: SecuredDesktopAgent, intentName: string, meta: ContextMetadataWithAuthenticity): Promise<IntentResult> {
+async function wrapIntentResult(ir: IntentResult, da: SecuredDesktopAgent, intentName: string): Promise<IntentResult> {
     if (ir == undefined) {
         return
     } else if ((ir.type == 'app') || (ir.type == 'user') || (ir.type == 'private')) {
-        // usual way to wrap channels
-        const out = da.wrapChannel(ir as Channel)
-        handlePrivateChannelKeyShare(out, meta)
-        return out
+        // it's a channel, just return as-is
+        return ir
     } else {
         // it's a context
         return signedContext(da.sign, ir as Context, intentName, undefined)
@@ -105,7 +104,7 @@ export function signingIntentHandler(da: SecuredDesktopAgent, handler: IntentHan
 
     const out = (c: Context, m: ContextMetadataWithAuthenticity | undefined) => {
 
-        async function checkSignature(): Promise<{ context: Context, meta: ContextMetadataWithAuthenticity }> {
+        async function checkSignature(): Promise<{ context: Context, meta: ContextMetadataWithAuthenticity | undefined }> {
             const signature = c[SIGNATURE_KEY] as MessageSignature
             if (signature) {
                 delete c[SIGNATURE_KEY]
@@ -131,9 +130,9 @@ export function signingIntentHandler(da: SecuredDesktopAgent, handler: IntentHan
             }
         }
 
-        async function applyHandler(context: Context, meta: ContextMetadata): Promise<IntentResult> {
+        async function applyHandler(context: Context, meta: ContextMetadata | undefined): Promise<IntentResult> {
             const result = await handler(context, meta)
-            const wrapped = await wrapIntentResult(result, da, intentName, meta)
+            const wrapped = await wrapIntentResult(result, da, intentName)
             return wrapped
         }
 

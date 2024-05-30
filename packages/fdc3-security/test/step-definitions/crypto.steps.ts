@@ -5,6 +5,8 @@ import { ClientSideImplementation } from "../../src/ClientSideImplementation";
 import { createSymmetricKey } from "../../src/encryption/EncryptionSupport";
 import { ContextMetadata, IntentHandler, IntentResult } from "@finos/fdc3";
 import { Context } from "vm";
+import { DesktopAgentSpy } from "../support/DesktopAgentSpy";
+import { SecuredDesktopAgent } from "../../src/SecuredDesktopAgent";
 
 Given('A New Signing Keypair loaded into {string} and {string}', async function (this: CustomWorld, pub: string, priv: string) {
     const kp = await new ClientSideImplementation().createSigningKeys()
@@ -56,4 +58,15 @@ Given('{string} is an intent handler which returns {string}', function (this: Cu
         return result
     }
     this.props[field] = out
+});
+
+Given('I use {string} wrapped with {string} to create a pair of connected, wrapped private channels, {string} and {string}', async function (this: CustomWorld, mock: string, api: string, channel1Name: string, channel2Name: string) {
+    const theMock = handleResolve(mock, this) as DesktopAgentSpy
+    const da = handleResolve(api, this) as SecuredDesktopAgent
+    const channel1 = await da.createPrivateChannel()
+    const channel2 = await da.createPrivateChannel()
+    this.props[channel1Name] = channel1
+    this.props[channel2Name] = channel2
+
+    theMock.connectChannels((channel1 as any).delegate, (channel2 as any).delegate)
 });

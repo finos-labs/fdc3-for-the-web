@@ -3,7 +3,7 @@ import { SymmetricKeyResponseContext } from "./SymmetricKeyContext"
 import { base64ToArrayBuffer } from "../ClientSideImplementation"
 
 export type Encrypt = (msg: Context, symmetricKey: CryptoKey) => Promise<EncryptedContext>
-export type Decrypt = (msg: EncryptedContext, symmetricKey: CryptoKey) => Promise<Context>
+export type Decrypt = (msg: EncryptedContent, symmetricKey: CryptoKey) => Promise<Context>
 
 export type WrapKey = (toWrap: CryptoKey, publicKeyUrl: string) => Promise<SymmetricKeyResponseContext>
 export type UnwrapKey = (key: SymmetricKeyResponseContext) => Promise<CryptoKey | null>
@@ -13,7 +13,9 @@ export type UnwrapKey = (key: SymmetricKeyResponseContext) => Promise<CryptoKey 
  */
 export const ENCRYPTION_KEY = "__encrypted"
 
-export enum EncryptionStatus { "cantDecrypt", "notEncrypted", "decrypted" }
+export const CANT_DECRYPT = "cant_decrypt"
+export const NOT_ENCRYPTED = "not_encrypted"
+export const DECRYPTED = "decrypted"
 
 export const ENCRYPTION_STATUS = "encryption"
 
@@ -30,7 +32,7 @@ export type EncryptedContext = {
 }
 
 export type ContextMetadataWithEncryptionStatus = ContextMetadata & {
-    encryption?: EncryptionStatus
+    encryption?: "cant_decrypt" | "not_encrypted" | "decrypted"
 }
 
 export async function createSymmetricKey() {
@@ -41,6 +43,19 @@ export async function createSymmetricKey() {
 export const SYMMETRIC_KEY_PARAMS: AesKeyGenParams = {
     name: SYMMETRIC_ENCRYPTION_ALGORITHM,
     length: 256
+}
+
+function serializeUInt8(array: Uint8Array): string {
+    return btoa(String.fromCharCode(...array))
+}
+
+function deserializeUInt8(base64: string): Uint8Array {
+    var binaryString = atob(base64);
+    var bytes = new Uint8Array(binaryString.length);
+    for (var i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
 }
 
 export const encrypt: Encrypt = async (c: Context, key: CryptoKey) => {
@@ -55,17 +70,19 @@ export const encrypt: Encrypt = async (c: Context, key: CryptoKey) => {
     return {
         type: c.type,
         __encrypted: {
-            algorithm: details,
+            algorithm: {
+                name: SYMMETRIC_ENCRYPTION_ALGORITHM,
+                iv: serializeUInt8(iv)
+            },
             encoded
         }
     }
 }
 
-export const decrypt: Decrypt = async (e: EncryptedContext, key: CryptoKey) => {
-    const encrypted = e.__encrypted
-    console.log("DECRYPTING " + encrypted)
-    const details = { name: SYMMETRIC_ENCRYPTION_ALGORITHM, iv: encrypted.algorithm.iv }
-    const buffer = await crypto.subtle.decrypt(details, key, base64ToArrayBuffer(encrypted.encoded))
+export const decrypt: Decrypt = async (e: EncryptedContent, key: CryptoKey) => {
+    console.log("DECRYPTING " + e.encoded)
+    const details = { name: SYMMETRIC_ENCRYPTION_ALGORITHM, iv: deserializeUInt8(e.algorithm.iv) }
+    const buffer = await crypto.subtle.decrypt(details, key, base64ToArrayBuffer(e.encoded))
     const decrypted = new TextDecoder().decode(buffer)
     return JSON.parse(decrypted)
 }

@@ -100,7 +100,7 @@ export class ClientSideImplementation {
         }
     }
 
-    initChecker(resolver: Resolver, timeWindowMS: number = 2000): Check {
+    initChecker(resolver: Resolver, timeWindowMS: number = 1000 * 60 * 60): Check {
         return async (p: MessageSignature, msg: string): Promise<MessageAuthenticity> => {
             console.log("CHECKING " + msg)
             this.validateAlgorithm(p.algorithm)
@@ -119,16 +119,19 @@ export class ClientSideImplementation {
                     const timeNow = new Date()
                     const messageTime = new Date(p.date)
                     const timeOk = (timeNow.getTime() - messageTime.getTime()) < timeWindowMS
-
+                    console.log(validated && timeOk ? "OK" : "BAD")
                     return {
                         verified: true,
                         valid: validated && timeOk,
                         publicKeyUrl: p.publicKeyUrl,
                     }
                 } catch (e) {
+                    console.error(e)
                     exceptions.push(e)
                 }
             }
+
+            console.log("NOT OK")
 
             const e = new Error("Couldn't verify signature");
             (e as any).exceptions = exceptions

@@ -17,6 +17,10 @@ export class ChannelDelegate implements PrivateChannel {
         this.displayMetadata = c.displayMetadata
     }
 
+    async wrapContext(ctx: Context): Promise<Context> {
+        return ctx
+    }
+
     onAddContextListener(handler: (contextType?: string | undefined) => void): Listener {
         return this.delegate.onAddContextListener(handler)
     }
@@ -33,8 +37,8 @@ export class ChannelDelegate implements PrivateChannel {
         this.delegate.disconnect()
     }
 
-    broadcast(context: Context): Promise<void> {
-        return this.delegate.broadcast(context)
+    async broadcast(context: Context): Promise<void> {
+        return this.delegate.broadcast(await this.wrapContext(context))
     }
 
     getCurrentContext(contextType?: string | undefined): Promise<Context | null> {

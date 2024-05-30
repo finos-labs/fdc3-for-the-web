@@ -1,8 +1,7 @@
 import { Context, ContextHandler, Listener, PrivateChannel } from "@finos/fdc3"
-import { ContextMetadataWithEncryptionStatus, ENCRYPTION_KEY, ENCRYPTION_STATUS, EncryptingPrivateChannel, EncryptionStatus, UnwrapKey, WrapKey, createSymmetricKey, decrypt, encrypt } from "./EncryptionSupport"
+import { CANT_DECRYPT, ContextMetadataWithEncryptionStatus, DECRYPTED, ENCRYPTION_KEY, ENCRYPTION_STATUS, EncryptedContent, EncryptingPrivateChannel, NOT_ENCRYPTED, UnwrapKey, WrapKey, createSymmetricKey, decrypt, encrypt } from "./EncryptionSupport"
 import { ChannelDelegate } from "../delegates/ChannelDelegate"
 import { SYMMETRIC_KEY_RESPONSE_CONTEXT, SYMMETRIC_KEY_REQUEST_CONTEXT, SymmetricKeyResponseContext, SymmetricKeyRequestContext } from "./SymmetricKeyContext"
-import { ContextMetadataWithAuthenticity } from "../signing/SigningSupport"
 
 /**
  * Adds encryptiion support for private channels.  A wrapped, symmetric key is sent via the private channel, 
@@ -30,7 +29,7 @@ export class EncryptingChannelDelegate extends ChannelDelegate implements Encryp
         this.wrapKey = wrapKey
 
         // listen for a symmetric key being sent
-        super.addContextListener(SYMMETRIC_KEY_RESPONSE_CONTEXT, async (context: SymmetricKeyResponseContext, _meta: any) => {
+        this.addContextListener(SYMMETRIC_KEY_RESPONSE_CONTEXT, async (context: SymmetricKeyResponseContext, _meta: any) => {
             const newKey = await unwrapKey(context)
             if (newKey) {
                 if (this.symmetricKey == null) {
@@ -53,16 +52,6 @@ export class EncryptingChannelDelegate extends ChannelDelegate implements Encryp
         if (state && !this.symmetricKey) {
             this.symmetricKey = await createSymmetricKey()
             this.keyCreator = true
-
-            if (!this.requestListener) {
-                // respond to requests for symmetric keys
-                this.requestListener = await super.addContextListener(SYMMETRIC_KEY_REQUEST_CONTEXT, async (_context: SymmetricKeyRequestContext, meta: ContextMetadataWithAuthenticity | undefined) => {
-                    console.log(`Received key request ${meta}`)
-                    if ((meta?.authenticity?.verified) && (meta?.authenticity?.valid)) {
-                        this.broadcastKey(meta.authenticity.publicKeyUrl)
-                    }
-                })
-            }
         }
     }
 
@@ -87,8 +76,13 @@ export class EncryptingChannelDelegate extends ChannelDelegate implements Encryp
         return (this.symmetricKey && this.encrypting) ? await encrypt(context, this.symmetricKey) : context
     }
 
-    broadcast(context: Context): Promise<void> {
-        return this.encryptIfAvailable(context).then(ec => super.broadcast(ec))
+    async broadcast(context: Context): Promise<void> {
+        // make sure encryption happens before signing
+        console.log("starting encryption")
+        const context2 = await super.wrapContext(context)
+        const encContext = await this.encryptIfAvailable(context2)
+        await super.broadcast(encContext)
+        console.log("Encryption done")
     }
 
     addContextListener(context: any, handler?: any): Promise<Listener> {
@@ -105,20 +99,20 @@ export class EncryptingChannelDelegate extends ChannelDelegate implements Encryp
 
             delete newMeta[ENCRYPTION_STATUS]
 
-            const encrypted = context[ENCRYPTION_KEY]
+            const encrypted = context[ENCRYPTION_KEY] as EncryptedContent
 
             if (encrypted) {
                 if (this.symmetricKey) {
                     context = await decrypt(encrypted, this.symmetricKey)
-                    newMeta[ENCRYPTION_STATUS] = EncryptionStatus.decrypted
+                    newMeta[ENCRYPTION_STATUS] = DECRYPTED
                 } else {
-                    newMeta[ENCRYPTION_STATUS] = EncryptionStatus.cantDecrypt
+                    newMeta[ENCRYPTION_STATUS] = CANT_DECRYPT
                     if (!this.keyCreator) {
                         this.requestEncryptionKey()
                     }
                 }
             } else {
-                newMeta[ENCRYPTION_STATUS] = EncryptionStatus.notEncrypted
+                newMeta[ENCRYPTION_STATUS] = NOT_ENCRYPTED
             }
 
             return ch(context, newMeta)

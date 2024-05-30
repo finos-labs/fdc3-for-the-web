@@ -16,8 +16,8 @@ export class SigningChannelDelegate extends ChannelDelegate {
         this.check = check
     }
 
-    broadcast(context: Context): Promise<void> {
-        return signedContext(this.sign, context, undefined, this.id).then(sc => super.broadcast(sc))
+    wrapContext(ctx: Context): Promise<Context> {
+        return signedContext(this.sign, ctx, undefined, this.id)
     }
 
     addContextListener(context: any, handler?: any): Promise<Listener> {

@@ -35,7 +35,8 @@ export type MessageAuthenticity = {
     valid: boolean,
     publicKeyUrl: string
 } | {
-    verified: false
+    verified: false,
+    error: any
 }
 
 export type ContextMetadataWithAuthenticity = ContextMetadata & {
@@ -68,13 +69,20 @@ export function signingContextHandler(check: Check, handler: ContextHandler, cha
             const signature = c[SIGNATURE_KEY] as MessageSignature
             delete c[SIGNATURE_KEY]
 
-            channelProvider()
+            return channelProvider()
                 .then(channel => contentToSign(c, signature.date, undefined, channel?.id))
                 .then(messageToCheck => check(signature, messageToCheck))
                 .then(r => {
                     const m2: ContextMetadataWithAuthenticity = (m == undefined) ? {} as ContextMetadataWithAuthenticity : m
                     m2[AUTHENTICITY_KEY] = r
-                    handler(c, m2)
+                    return handler(c, m2)
+                }).catch(e => {
+                    console.log("Couldn't check signature")
+                    const m2: ContextMetadataWithAuthenticity = (m == undefined) ? {} as ContextMetadataWithAuthenticity : m
+                    m2[AUTHENTICITY_KEY] = {
+                        verified: false,
+                        error: e
+                    }
                 })
         } else {
             if (m) {

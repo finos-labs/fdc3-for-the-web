@@ -18,6 +18,7 @@ Feature: Private Channel Encryption
   #     | type    | id      | encrypting |
   #     | private | priv123 | true       |
 
+  @FDC32-2 @SmokeTest
   Scenario: A pair of listeners on a private channel can coordinate a symmetric encryption key
 This uses a context object to request and return the encryption key
 

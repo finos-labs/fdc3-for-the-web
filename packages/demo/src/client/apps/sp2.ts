@@ -46,9 +46,9 @@ function doIt() {
                 }
             })
 
-            log!!.textContent = `Got resolution: ${JSON.stringify(reso)}`
+            log!!.textContent = `Got resolution: ${reso.intent} from ${reso.source}\n`
             const result = await reso.getResult()
-            log!!.textContent += `Got result: ${JSON.stringify(result)}`
+            log!!.textContent += `Got result: ${result?.type} ${result?.id}\n`
 
             privateChannel = result as PrivateChannel
             privateChannel.addContextListener(null, (ctx, meta) => {

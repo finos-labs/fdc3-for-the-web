@@ -42,12 +42,20 @@
       #tokens {
         display: none;
       }
+      body {
+        margin: 0;
+        width: 150px;
 
-      body[data-expanded="true"] #list {
-        display: block;
-      }
-      body[data-expanded="false"] #tokens {
-        display: block;
+        &::-webkit-scrollbar {
+          display: none;
+        }
+
+        &[data-expanded="true"] #list {
+          display: block;
+        }
+        &[data-expanded="false"] #tokens {
+          display: block;
+        }
       }
     </style>
   </head>

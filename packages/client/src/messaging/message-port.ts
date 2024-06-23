@@ -5,6 +5,82 @@ import { MessagePortMessaging } from "./MessagePortMessaging";
 import { DefaultDesktopAgentIntentResolver } from "../intent-resolution/DefaultDesktopAgentIntentResolver";
 import { DefaultDesktopAgentChannelSelector } from "../channel-selector/DefaultDesktopAgentChannelSelector";
 
+// https://fdc3.finos.org/docs/api/spec#joining-user-channels
+const recommendedChannels = [
+    {
+      id: 'fdc3.channel.1',
+      type: 'user',
+      displayMetadata: {
+        name: 'Channel 1',
+        color: 'red',
+        glyph: '1',
+      },
+    },
+    {
+      id: 'fdc3.channel.2',
+      type: 'user',
+      displayMetadata: {
+        name: 'Channel 2',
+        color: 'orange',
+        glyph: '2',
+      },
+    },
+    {
+      id: 'fdc3.channel.3',
+      type: 'user',
+      displayMetadata: {
+        name: 'Channel 3',
+        color: 'yellow',
+        glyph: '3',
+      },
+    },
+    {
+      id: 'fdc3.channel.4',
+      type: 'user',
+      displayMetadata: {
+        name: 'Channel 4',
+        color: 'green',
+        glyph: '4',
+      },
+    },
+    {
+      id: 'fdc3.channel.5',
+      type: 'user',
+      displayMetadata: {
+        name: 'Channel 5',
+        color: 'cyan',
+        glyph: '5',
+      },
+    },
+    {
+      id: 'fdc3.channel.6',
+      type: 'user',
+      displayMetadata: {
+        name: 'Channel 6',
+        color: 'blue',
+        glyph: '6',
+      },
+    },
+    {
+      id: 'fdc3.channel.7',
+      type: 'user',
+      displayMetadata: {
+        name: 'Channel 7',
+        color: 'magenta',
+        glyph: '7',
+      },
+    },
+    {
+      id: 'fdc3.channel.8',
+      type: 'user',
+      displayMetadata: {
+        name: 'Channel 8',
+        color: 'purple',
+        glyph: '8',
+      },
+    },
+  ];
+
 /**
  * Given a message port, constructs a desktop agent to communicate via that.
  */
@@ -67,21 +143,6 @@ function openFrame(url: string): Window {
     return ifrm.contentWindow!!
 }
 
-function buildUserChannelState(messaging: MessagePortMessaging) {
-    // TODO: Figure out how to set initial user channels.  
-    // Should probably be in the message from the server.
-    return [
-        new DefaultChannel(messaging, "one", "user", {
-            color: "red",
-            name: "THE RED CHANNEL"
-        }),
-        new DefaultChannel(messaging, "two", "user", {
-            color: "blue",
-            name: "THE BLUE CHANNEL"
-        }),
-        new DefaultChannel(messaging, "three", "user", {
-            color: "green",
-            name: "THE GREEN CHANNEL"
-        })
-    ]
-}
+// TODO: Figure out how to set initial user channels.  
+// Should probably be in the message from the server.
+const buildUserChannelState = (messaging: MessagePortMessaging) => recommendedChannels.map(({id, type, displayMetadata}) => new DefaultChannel(messaging, id, type, displayMetadata));

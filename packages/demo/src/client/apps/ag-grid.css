@@ -27,10 +27,10 @@ body {
     font-weight: bold;
 }
 .ag-row-level-1 {
-    color: darkblue;
+    color: white;
 }
 .ag-row-level-2 {
-    color: darkgreen;
+    color: green;
 }
 #quick-filter-box{
     border-radius: 0.5rem;

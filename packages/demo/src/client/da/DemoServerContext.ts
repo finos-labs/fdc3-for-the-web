@@ -73,12 +73,12 @@ export class DemoServerContext implements ServerContext {
         this.socket.emit(FDC3_DA_EVENT, message, to)
     }
 
-    openFrame(url: string): Window {
+    openFrame(url: string, location = document.body): Window {
         var ifrm = document.createElement("iframe");
         ifrm.setAttribute("src", url);
-        ifrm.style.width = "640px";
-        ifrm.style.height = "480px";
-        document.body.appendChild(ifrm);
+        ifrm.style.width = "100%";
+        ifrm.style.height = "100%";
+        location?.appendChild(ifrm);
         return ifrm.contentWindow!!;
     }
 
@@ -100,7 +100,7 @@ export class DemoServerContext implements ServerContext {
         return ifrm.contentWindow!!;
     }
 
-    openUrl(url: string): Window {
+    openUrl(url: string, container?: HTMLElement): Window {
         const opener = this.getOpener();
         switch (opener) {
             case Opener.Tab:
@@ -108,16 +108,16 @@ export class DemoServerContext implements ServerContext {
             case Opener.Nested:
                 return this.openNested(url);
             case Opener.Frame:
-                return this.openFrame(url);
+                return this.openFrame(url, container);
         }
         throw new Error("unsupported")
     }
 
-    async open(appId: string): Promise<AppMetadata> {
+    async open(appId: string, container?: HTMLElement): Promise<AppMetadata> {
         const details: DirectoryApp[] = this.directory.retrieveAppsById(appId) as DirectoryApp[]
         if (details.length > 0) {
             const url = (details[0].details as any)?.url ?? undefined
-            const window = this.openUrl(url)
+            const window = this.openUrl(url, container)
             const metadata = {
                 appId,
                 instanceId: this.createUUID()

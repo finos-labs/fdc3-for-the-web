@@ -67,7 +67,7 @@ const passContext = (ticker: string) => {
         id: {
             ticker
         }
-    })
+    });
 }
 const raiseIntent = (intent: string, ticker: string) => {
     window.fdc3.raiseIntent(intent, {
@@ -81,7 +81,7 @@ const raiseIntent = (intent: string, ticker: string) => {
 
 const init = async () => {
     // Initialize AG-Grid
-    // @ts-ignore
+    // @ts-ignore: agGrid is defined globally
     const {gridOptions} = new agGrid.Grid<HTMLDivElement>(
       document.querySelector("#myGrid"), // element
       setupGridOptions  // options (rows of data, interactions, etc)
@@ -110,7 +110,14 @@ const init = async () => {
     try {
         // LINE CURRENTLY FAILS
         window.fdc3 = await getClientAPI();
-        console.log(window.fdc3);
+
+        
+        const cc = await fdc3.getCurrentChannel()
+
+        if (cc == null) {
+            const channels = await fdc3.getUserChannels()
+            await fdc3.joinUserChannel(channels[0].id)
+        }
 
         // Listen for contexts
         window.fdc3.addContextListener((context) => {
@@ -123,6 +130,18 @@ const init = async () => {
             filterBox.value = symbol;
             // Apply a filter based on the symbol
             gridOptions.api.setQuickFilter(symbol);
+
+    
+
+            if(gridOptions.api.getLastDisplayedRowIndex() > 0){
+              return;
+            };
+            gridOptions.api.forEachNode((node) => {
+              if(node.level === 0){
+                gridOptions.api.setRowNodeExpanded(node, true);
+              }
+            });
+
         });
     } catch (err) {
         console.log("waiting...");
@@ -165,10 +184,6 @@ const createTradeId = () => ++nextTradeId;
 const randomBetween = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 const numberCellFormatter = ({ value }: FormatterParams) =>
   `$${Math.floor(value).toString().replace(dollarFormatterRegEx, "$1,")}`;
-const gainLossFormatter = ({ value }: FormatterParams) =>
-  value > 0 ? "gain" : "loss";
-const percentCellFormatter = ({ value }: FormatterParams) =>
-  value > 0 ? "gain" : "loss";
 
 // Create a list of the data, that we modify as we go. if you are using an immutable
 // data store (such as Redux) then this would be similar to your store of data.
@@ -317,28 +332,6 @@ const setupGridOptions = {
           raiseIntent("ViewChart",params.node.key);
         },
       },
-    },
-    {
-      headerName: "Gain/Loss",
-      field: "chng",
-      width: 125,
-      aggFunc: "sum",
-      enableValue: true,
-      cellClass: "number",
-      valueFormatter: gainLossFormatter,
-      cellRenderer: "agAnimateShowChangeCellRenderer",
-      filter: "agNumberColumnFilter",
-    },
-    {
-      headerName: "% Change (avg)",
-      field: "pctchng",
-      width: 75,
-      aggFunc: "avg",
-      enableValue: true,
-      cellClass: "number",
-      cellRenderer: "agAnimateShowChangeCellRenderer",
-      valueFormatter: percentCellFormatter,
-      filter: "agNumberColumnFilter",
     },
     {
       headerName: "52 Wk High",

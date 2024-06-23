@@ -1,0 +1,58 @@
+<html lang="en">
+
+<head>
+    <title>Desktop Agent</title>
+    <meta charset="UTF-8" />
+    <script type="module" src="/src/client/da/julianna.ts"></script>
+    <style>
+html {
+    background-color: black;
+}
+body {
+    color: white;
+    margin: 0;
+    background-color: rgba(3, 49, 82, 0.4);
+    padding-left: 16px;
+}
+h1 {
+    text-align: center;
+    padding-top: 16px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+#app-list {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: 640px 640px 200px;
+    grid-template-rows: 483px 483px;
+
+    > div {
+        border: 1px solid black;
+    
+        iframe {
+            border: none;
+        }
+    }
+}
+
+
+
+
+    </style>
+</head>
+
+<body>
+    <h1>Dummy Desktop Agent</h1>
+    <input type="hidden" id="opener" name="opener" value="Frame" />
+    <input type="hidden" id="approach" name="approach" value="IFRAME" />
+    <input type="hidden" id="ui" name="ui" value="DEFAULT" />
+
+    <div id="app-list" role="grid">
+        <div data-appId="grid" style="grid-column: 1 / span 1; grid-row: 1 / span 2;"></div>
+        <div data-appId="chartiq" style="grid-column: 2 / span 1; grid-row: 1 / span 1"></div>
+        <div data-appId="chartiq" style="grid-column: 2 / span 1; grid-row: 2 / span 1"></div>
+        <div data-appId="grid" style="grid-column: 1 / span 2; grid-row: 3 / span 1"></div>
+    </div>
+
+</body>
+
+</html>

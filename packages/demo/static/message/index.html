@@ -1,0 +1,45 @@
+<html>
+    <head>
+        <title>Messages</title>
+        <script type="module" src="../../src/client/apps/message.ts"></script>
+        <style>
+body {
+    /* (38, 44, 46) x (21, 31, 40) */
+    background-color: rgb(29, 37, 43);
+    color: white;
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.aside {
+    width: 200px;
+    height: 24px;
+    font-size: 18px;
+    display: flex;
+    justify-content: space-between;
+}
+        </style>
+    </head>
+    <body>
+        <div style="display: flex; justify-content: space-between;">
+            <div style="width: 400px; filter: invert();">
+                <canvas id="spark"></canvas>
+            </div>
+            <div class="sidebar">
+                <h1 style="text-align:right">MSFT</h1>
+                <div class="aside">
+                    <span>Revenue</span>
+                    <span id="revenue-value" style="color: green">$20k &#x25B2;</span>
+                </div>
+                <div class="aside">
+                    <span>COGS</span>
+                    <span id="cogs-value" style="color: red">$3k &#x25BC;</span>
+                </div>
+            </div>
+        </div>
+
+    </body>
+</html>

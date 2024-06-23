@@ -169,6 +169,28 @@
                     "broadcasts": ["fdc3.instrument"]
                 }
             }
+        },
+        {
+            "appId": "message",
+            "name": "message",
+            "title": "Messenger",
+            "type": "web",
+            "details": {
+                "url": "http://localhost:8095/static/message/index.html"
+            },
+            "interop": {
+                "intents": {
+                    "listensFor": {
+                        "ViewChart": {
+                            "displayName": "View Chart",
+                            "contexts": ["fdc3.instrument"]
+                        }
+                    }
+                },
+                "userChannels": {
+                    "broadcasts": ["fdc3.instrument"]
+                }
+            }
         }
     ],
     "message": "OK"

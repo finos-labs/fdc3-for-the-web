@@ -19,6 +19,7 @@
     "@kite9/fdc3-common": "workspace:*",
     "@types/uuid": "^9.0.8",
     "@types/ws": "^8.5.10",
+    "chart.js": "4.4.3",
     "express": "^4.18.3",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",

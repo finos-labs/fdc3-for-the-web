@@ -1,7 +1,25 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <style> html, body { margin: 0; padding: 0; height: 100%; } body::-webkit-scrollbar{display: none;} </style>
+    <style> 
+    html, body { 
+        margin: 0; 
+        padding: 0; 
+        height: 100%; 
+    } 
+    body::-webkit-scrollbar{
+        display: none;
+    } 
+    button.search-cancel-button {
+        background: transparent;
+        border: none;
+        position:relative;
+        left: -28px;
+        top: 3px;
+        cursor: pointer;
+    }
+    
+    </style>
     <script src="https://unpkg.com/ag-grid-enterprise/dist/ag-grid-enterprise.min.js"></script>
     <script type="module" src="../../src/client/apps/ag-grid.ts"></script>
 </head>
@@ -10,7 +28,11 @@
 <div class="ag-theme-balham-dark container-quick-search" style="height: 100%; box-sizing: border-box;">
    <div class="quick-search">
        <!-- <img src="../../../aggrid-logo.png" /> -->
-       <label><strong>Symbol Search :</strong></label> <input id="quick-filter-box" />
+       <label><strong>Symbol Search :</strong></label> 
+       <input id="quick-filter-box" />
+       <button class="search-cancel-button">
+        <span class="ag-icon ag-icon-cancel" unselectable="on" role="presentation"></span>
+       </button>
     </div>
     <div id="myGrid" style="height: calc(100vh - 30px);" class="ag-theme-balham-dark"></div>
 </div>

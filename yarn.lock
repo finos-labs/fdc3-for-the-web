@@ -1461,6 +1461,7 @@ __metadata:
     "@types/node": "npm:^20.9.3"
     "@types/uuid": "npm:^9.0.8"
     "@types/ws": "npm:^8.5.10"
+    chart.js: "npm:4.4.3"
     express: "npm:^4.18.3"
     nodemon: "npm:^3.0.1"
     rimraf: "npm:^5.0.7"
@@ -1495,6 +1496,13 @@ __metadata:
     typescript: "npm:^5.3.2"
   languageName: unknown
   linkType: soft
+
+"@kurkle/color@npm:^0.3.0":
+  version: 0.3.2
+  resolution: "@kurkle/color@npm:0.3.2"
+  checksum: 10c0/a9e8e3e35dcd59dec4dd4f0105919c05e24823a96347bcf152965c29e48d6290b66d5fb96c071875db752e10930724c48ce6d338fefbd65e0ce5082d5c78970e
+  languageName: node
+  linkType: hard
 
 "@material-ui/core@npm:^4.11.4":
   version: 4.12.4
@@ -3214,6 +3222,15 @@ __metadata:
   version: 1.1.4
   resolution: "character-reference-invalid@npm:1.1.4"
   checksum: 10c0/29f05081c5817bd1e975b0bf61e77b60a40f62ad371d0f0ce0fdb48ab922278bc744d1fbe33771dced751887a8403f265ff634542675c8d7375f6ff4811efd0e
+  languageName: node
+  linkType: hard
+
+"chart.js@npm:4.4.3":
+  version: 4.4.3
+  resolution: "chart.js@npm:4.4.3"
+  dependencies:
+    "@kurkle/color": "npm:^0.3.0"
+  checksum: 10c0/910113b07983d1b2f52689afcd88d0c5fecbd30fbbe89f4e122d78397fd4521e1563fd6d80f7742a391abe7cfbfa8deaf12c58b83c9636431fa77e7285d85c2e
   languageName: node
   linkType: hard
 

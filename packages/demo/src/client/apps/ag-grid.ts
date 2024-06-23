@@ -103,6 +103,12 @@ const init = async () => {
             // @ts-ignore
             passContext(e.target.value.toUpperCase());
         }
+    });
+
+    document.querySelector<HTMLButtonElement>(".search-cancel-button")?.addEventListener("click", () => {
+      gridOptions.api.setQuickFilter("");
+      filterBox.value = "";
+      gridOptions.api.collapseAll();
     })
   
     

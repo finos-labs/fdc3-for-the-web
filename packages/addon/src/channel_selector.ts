@@ -16,7 +16,16 @@ function fillChannels(data: ChannelDetails[], selected: string | null, messageCl
     span.classList.add('glyph');
     span.style.color = displayMetadata.color;
     span.style.borderColor = displayMetadata.color;
-    span.textContent = displayMetadata.glyph ?? '';
+
+    // "Glyph" is a single character, rather than a URL
+    if(displayMetadata.glyph?.length === 1) {
+      span.textContent = displayMetadata.glyph;
+    }else if(displayMetadata.glyph?.length > 1){
+      const image = document.createElement("img");
+      image.src = displayMetadata.glyph;
+      span.appendChild(image);
+    }
+
     node.appendChild(span);
     const span2 = document.createElement('span');
     span2.classList.add('name');

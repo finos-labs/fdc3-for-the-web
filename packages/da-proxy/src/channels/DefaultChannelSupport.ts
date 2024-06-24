@@ -64,7 +64,7 @@ export class DefaultChannelSupport implements ChannelSupport {
                     // todo - figure out how to source these
                     name: 'channel named ' + id,
                     color: '#abc',
-                    glyph: "circle.png"
+                    glyph: "./circle.png"
                 })
                 contexts.forEach(c => {
                     newChannel.latestContextMap.set(c.type, c)

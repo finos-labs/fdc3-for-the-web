@@ -18,9 +18,9 @@ function fillChannels(data: ChannelDetails[], selected: string | null, messageCl
     span.style.borderColor = displayMetadata.color;
 
     // "Glyph" is a single character, rather than a URL
-    if(displayMetadata.glyph?.length === 1) {
+    if(displayMetadata?.glyph?.length === 1) {
       span.textContent = displayMetadata.glyph;
-    }else if(displayMetadata.glyph?.length > 1){
+    }else if(displayMetadata?.glyph?.length > 1){
       const image = document.createElement("img");
       image.src = displayMetadata.glyph;
       span.appendChild(image);

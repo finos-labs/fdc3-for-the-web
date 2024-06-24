@@ -7,16 +7,16 @@ const DEFAULT_CHANNEL_SELECTOR_DETAILS: ChannelSelectorDetails = {
     collapsedCss: {
         position: "fixed",
         zIndex: "1000",
-        right: "10px",
-        bottom: "10px",
+        right: "-4px",
+        bottom: "-4px",
         width: "50px",
         height: "50px"
     },
     expandedCss: {
         position: "fixed",
         zIndex: "1000",
-        right: "10px",
-        bottom: "10px",
+        right: "-4px",
+        bottom: "-4px",
         width: "450px",
         maxHeight: "600px",
         transition: "all 0.5s ease-out allow-discrete"

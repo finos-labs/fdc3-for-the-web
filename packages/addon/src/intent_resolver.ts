@@ -3,7 +3,6 @@ import { AppIntent } from "@finos/fdc3";
 import { ResolverIntents, ResolverMessageChoice, SingleAppIntent } from "@kite9/fdc3-common";
 
 const setup = (data: ResolverIntents, callback: (s: SingleAppIntent | null) => void) => {
-  document.body.setAttribute("data-visible", "true");
 
   const intentSelect = document.getElementById("displayIntent") as HTMLSelectElement
 
@@ -44,7 +43,9 @@ const setup = (data: ResolverIntents, callback: (s: SingleAppIntent | null) => v
 
   document.getElementById("cancel")!!.addEventListener("click", () => {
     callback(null);
-  })
+  });
+
+  document.body.setAttribute("data-visible", "true");
 }
 
 function createIcon(icons: Icon[] | undefined): HTMLElement {
@@ -97,7 +98,7 @@ const fillList = (ai: AppIntent[], intent: string, callback: (s: SingleAppIntent
   });
 
   // then, populate the "Open Apps" tab
-  const openList = document.getElementById('open-list')!!
+  const openList = document.getElementById('open-list')!;
   openList.innerHTML = '';
 
   openApps.forEach(({ appId, title, icons, instanceId }) => {
@@ -109,26 +110,28 @@ const fillList = (ai: AppIntent[], intent: string, callback: (s: SingleAppIntent
     span.textContent = title ?? appId;
 
     const img = createIcon(icons)
-
     node.appendChild(img);
+
     node.appendChild(span);
 
     node.addEventListener('click', () => {
       callback({
         intent: {
           name: intent,
-          displayName: "Whatever"
         },
         chosenApp: {
           appId,
           instanceId
         }
-      })
+      });
     });
 
     openList.appendChild(node);
   });
 
+  if (openApps.length === 0){
+    document.querySelector("[role='tab'][aria-selected='false']")?.dispatchEvent(new Event("click"))
+  }
 };
 
 window.addEventListener("load", () => {

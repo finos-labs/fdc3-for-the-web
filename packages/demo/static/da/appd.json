@@ -171,9 +171,9 @@
             }
         },
         {
-            "appId": "message",
-            "name": "message",
-            "title": "Messenger",
+            "appId": "overview",
+            "name": "overview",
+            "title": "Overview",
             "type": "web",
             "details": {
                 "url": "http://localhost:8095/static/message/index.html"

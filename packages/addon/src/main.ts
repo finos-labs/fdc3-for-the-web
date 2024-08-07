@@ -1,5 +1,6 @@
 import { ResolverIntents } from "@kite9/fdc3-common";
 import "./style.css";
+import { prettyPrintJson } from "pretty-print-json";
 
 // Channel data
 const recommendedChannels = [
@@ -126,7 +127,7 @@ const exampleResolverData: ResolverIntents = {
 let selected = recommendedChannels[2].id;
 let expanded = true;
 
-const openChannelIframe = e => {
+const openChannelIframe = (e: Event) => {
   const channel = new MessageChannel();
 
   // STEP 2B: Receive confirmation over port from iframe
@@ -155,7 +156,7 @@ const openChannelIframe = e => {
 
   };
 
-  e.target.disabled = true;
+  (e.target as HTMLInputElement).disabled = true;
 
   const iframe = document.querySelector<HTMLIFrameElement>("#channel-iframe")!;
   iframe.parentElement?.setAttribute("data-visible", "true");
@@ -173,7 +174,7 @@ const openChannelIframe = e => {
   iframe.contentWindow?.postMessage({ type: 'iframeHello' }, '*', [channel.port2]);
 };
 
-const openResolverIframe = e => {
+const openResolverIframe = (e: Event) => {
   const channel = new MessageChannel();
 
   // STEP 2B: Receive confirmation over port from iframe
@@ -193,7 +194,7 @@ const openResolverIframe = e => {
     }
 
   };
-  e.target.disabled = true;
+  (e.target as HTMLInputElement).disabled = true;
 
   const iframe = document.querySelector<HTMLIFrameElement>("#resolver-iframe");
   iframe!.parentElement?.setAttribute("data-visible", "true");

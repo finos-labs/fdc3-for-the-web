@@ -8,17 +8,16 @@ This is a minimal proof-of-concept for FDC3 For the Web.
 
     ```
     node: v20+
-    yarn v4+
+    npm: v8+
     ```
 
 1.  From the Command Line:
 
     ```
-    yarn install
-    yarn workspaces foreach --all install
-    yarn workspaces foreach --all run build
+    npm install
+    npm run build
     cd packages/demo
-    yarn dev
+    npm run dev
     ```
 
 2.  Point browser at [http://localhost:8080/static/da/index.html](http://localhost:8095/static/da/index.html)
@@ -29,25 +28,25 @@ This is a minimal proof-of-concept for FDC3 For the Web.
 
 ## What This Project Contains
 
-The project is divided into several different yarn workspaces:
+The project is divided into several different npm workspaces:
 
 - `da-proxy`:
 
   - `src`: This is an implementation of a client-side, typescript desktop agent proxy that communicates to a server backend using the APIs/JSON Schema defined in [Agent Bridging](https://fdc3.finos.org/docs/next/agent-bridging/spec). It is expected that we would standardize this and add to the FDC3 NPM module.
-  - `test`: This is some cucumber/gherkin tests that exercise the functionality in `src`. These are written to be language-agnostic so that we can use the same Gherkin feature files to test .net, Java, Python APIs too. These can be run with `yarn build`
+  - `test`: This is some cucumber/gherkin tests that exercise the functionality in `src`. These are written to be language-agnostic so that we can use the same Gherkin feature files to test .net, Java, Python APIs too. These can be run with `npm run build`
 
 - `client`: This exports the `getClientAPI()` function which can be used to retrieve a desktop agent API via the web.
 
 - `da-server`:
 
   - `src`: A minimal implementation of the desktop-agent bridging protocol for handling messages between multiple connected sources.
-  - `test`: This is some cucumber/gherkin tests that exercise the functionality in `src`. These can be run with `yarn build`
+  - `test`: This is some cucumber/gherkin tests that exercise the functionality in `src`. These can be run with `npm run build`
 
 - `common` : Common APIs and functionality used by both `client` and `server`
 
 - `demo` : A bare-bones desktop agent implementation with a few apps that use WebFDC3. See: https://static.swimlanes.io/6bb69f2c9acdc0656f5f3b098d40518e.png for how this works. Basically, the implementation here is that it uses iframes approach and a server-side websocket to relay messages.
 
-- `fdc3-workbench`: The FDC3 Workbench app from https://github.com/FDC3/toolbox/workbench, ported to use WebFDC3. Start with `yarn dev` and invoke from `demo`
+- `fdc3-workbench`: The FDC3 Workbench app from https://github.com/FDC3/toolbox/workbench, ported to use WebFDC3. Start with `npm run dev` and invoke from `demo`
 
 ## Configuring the client
 
@@ -136,8 +135,8 @@ address of the embed page in the cookie? Problem is, the cookie is scoped to the
 ## Releasing
 
 ```
-yarn npm login
-yarn workspaces foreach --all version 0.0.10 (or whatever)
-yarn workspaces foreach --all npm publish --access=public
+npm login
+npm version 0.0.10 --workspaces (or whatever)
+npm publish --access=public --workspaces
 
 ```

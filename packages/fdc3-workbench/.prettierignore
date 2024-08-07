@@ -4,5 +4,4 @@ dist/
 node_modules/
 *.d.ts
 *.md
-yarn.lock
 package.json

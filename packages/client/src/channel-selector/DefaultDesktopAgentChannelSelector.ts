@@ -31,7 +31,6 @@ const DEFAULT_CHANNEL_SELECTOR_DETAILS: ChannelSelectorDetails = {
  */
 export class DefaultDesktopAgentChannelSelector implements ChannelSelector {
 
-    private readonly m: Messaging
     private readonly details: ChannelSelectorDetails
     private container: HTMLDivElement | undefined = undefined
     private iframe: Window | undefined = undefined
@@ -40,8 +39,7 @@ export class DefaultDesktopAgentChannelSelector implements ChannelSelector {
     private callback: ((channelId: string) => void) | null = null
     private port: MessagePort | undefined = undefined
 
-    constructor(m: Messaging, details: ChannelSelectorDetails | null) {
-        this.m = m
+    constructor(_m: Messaging, details: ChannelSelectorDetails | null) {
         this.details = details ?? DEFAULT_CHANNEL_SELECTOR_DETAILS
         this.setupMessageListener()
         this.openFrame()

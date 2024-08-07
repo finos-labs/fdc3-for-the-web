@@ -1,6 +1,6 @@
 /dist
 /node_modules
-.yarn/
+.npm/
 .pnp.*
 .pnp.cjs
 .DS_Store

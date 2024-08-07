@@ -1,4 +1,4 @@
-import { AppIdentifier, AppMetadata, DesktopAgent, IntentMetadata, IntentResult, Channel, ContextElement } from "@finos/fdc3";
+import { AppIdentifier, DesktopAgent, IntentMetadata, IntentResult, Channel, ContextElement } from "@finos/fdc3";
 import { exchange, exchangePostMessage, exchangeForMessagePort } from "./exchange";
 import { AppIntent, PrivateChannelOnAddContextListenerAgentRequest, PrivateChannelOnAddContextListenerAgentRequestMeta, PrivateChannelOnUnsubscribeAgentRequest } from "@finos/fdc3/dist/bridging/BridgingTypes";
 

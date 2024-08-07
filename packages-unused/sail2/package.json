@@ -17,9 +17,9 @@
   },
   "dependencies": {
     "@finos/fdc3": "^2.1.0-beta.6",
-    "@kite9/client": "workspace:*",
-    "@kite9/da-server": "workspace:*",
-    "@kite9/fdc3-common": "workspace:*",
+    "@kite9/client": "^0.0.30",
+    "@kite9/da-server": "^0.0.30",
+    "@kite9/fdc3-common": "^0.0.30",
     "@types/react-dom": "^18.2.25",
     "@types/uuid": "^9.0.8",
     "@types/ws": "^8.5.10",

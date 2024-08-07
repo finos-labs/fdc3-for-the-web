@@ -21,12 +21,10 @@ export const DEFAULT_INTENT_RESOLVER_DETAILS: IntentResolverDetails = {
  */
 export class DefaultDesktopAgentIntentResolver implements IntentResolver {
 
-    private readonly m: Messaging
     private readonly details: IntentResolverDetails
     private container: HTMLDivElement | undefined = undefined
 
-    constructor(m: Messaging, details: IntentResolverDetails | null) {
-        this.m = m
+    constructor(_m: Messaging, details: IntentResolverDetails | null) {
         this.details = details ?? DEFAULT_INTENT_RESOLVER_DETAILS
     }
 

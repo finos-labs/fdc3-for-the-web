@@ -1,6 +1,5 @@
 import { ChannelDetails, SelectorMessageChannels } from "@kite9/fdc3-common";
 
-
 var channels: ChannelDetails[] = []
 var channelId: string | null = null
 
